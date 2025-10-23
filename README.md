@@ -20,6 +20,16 @@ The template ships with minimal sample commands (`add`, `list`, and `delete`) th
 thread dependencies through each layer. Replace or extend them with your own domain logic while
 reusing the same structure.
 
+## Storage Layout
+
+The template stores items under `~/.config/rs-cli-tmpl/<id>/item.txt`. For example, after running `rs-cli-tmpl add my-item --content '...'`:
+
+```text
+~/.config/rs-cli-tmpl/
+  my-item/
+    item.txt
+```
+
 ## Quick Start
 
 ```bash

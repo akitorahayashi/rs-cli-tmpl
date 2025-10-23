@@ -57,6 +57,19 @@ fn delete_command_removes_item() {
 
 #[test]
 #[serial]
+fn delete_nonexistent_item_fails() {
+    let ctx = TestContext::new();
+
+    ctx.cli()
+        .arg("delete")
+        .arg("nonexistent")
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("Item 'nonexistent' was not found"));
+}
+
+#[test]
+#[serial]
 fn add_with_invalid_id_fails() {
     let ctx = TestContext::new();
 

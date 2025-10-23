@@ -74,9 +74,10 @@ impl Storage for FilesystemStorage {
     fn delete_item(&self, id: &str) -> Result<(), AppError> {
         self.ensure_valid_id(id)?;
         let directory = self.item_dir(id);
-        if directory.exists() {
-            fs::remove_dir_all(directory)?;
+        if !directory.exists() {
+            return Err(AppError::ItemNotFound(id.to_string()));
         }
+        fs::remove_dir_all(directory)?;
         Ok(())
     }
 }
@@ -165,5 +166,15 @@ mod tests {
         storage.delete_item("temp").expect("delete succeeds");
 
         assert!(!ctx.storage_root().join("temp").exists());
+    }
+
+    #[test]
+    #[serial]
+    fn delete_item_fails_if_not_exists() {
+        let ctx = TestContext::new();
+        let storage = ctx.storage();
+
+        let result = storage.delete_item("nonexistent");
+        assert!(matches!(result, Err(AppError::ItemNotFound(ref id)) if id == "nonexistent"));
     }
 }
