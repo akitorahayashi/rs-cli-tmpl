@@ -2,60 +2,52 @@ use std::error::Error;
 use std::fmt::{self, Display};
 use std::io;
 
-/// Library-wide error type capturing domain-specific and underlying I/O failures.
+/// Library-wide error type capturing domain-neutral and underlying I/O failures.
 #[derive(Debug)]
-pub enum KpvError {
+pub enum AppError {
     Io(io::Error),
-    HomeNotConfigured,
-    EnvFileNotFound,
-    KeyNotFound(String),
-    EnvAlreadyExists,
+    /// Configuration or environment issue that prevents command execution.
+    ConfigError(String),
+    /// Raised when a requested item cannot be located in storage.
+    ItemNotFound(String),
 }
 
-impl Display for KpvError {
+impl Display for AppError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            KpvError::Io(err) => write!(f, "{}", err),
-            KpvError::HomeNotConfigured => write!(f, "HOME environment variable not set"),
-            KpvError::EnvFileNotFound => {
-                write!(f, "No .env file found in the current directory")
-            }
-            KpvError::KeyNotFound(key) => write!(f, "No .env file found for key '{}'", key),
-            KpvError::EnvAlreadyExists => {
-                write!(f, ".env file already exists in the current directory")
-            }
+            AppError::Io(err) => write!(f, "{}", err),
+            AppError::ConfigError(message) => write!(f, "{message}"),
+            AppError::ItemNotFound(id) => write!(f, "Item '{id}' was not found"),
         }
     }
 }
 
-impl Error for KpvError {
+impl Error for AppError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
-            KpvError::Io(err) => Some(err),
-            _ => None,
+            AppError::Io(err) => Some(err),
+            AppError::ConfigError(_) | AppError::ItemNotFound(_) => None,
         }
     }
 }
 
-impl From<io::Error> for KpvError {
+impl From<io::Error> for AppError {
     fn from(value: io::Error) -> Self {
-        KpvError::Io(value)
+        AppError::Io(value)
     }
 }
 
-impl KpvError {
-    pub(crate) fn key_not_found<S: Into<String>>(key: S) -> Self {
-        KpvError::KeyNotFound(key.into())
+impl AppError {
+    pub(crate) fn config_error<S: Into<String>>(message: S) -> Self {
+        AppError::ConfigError(message.into())
     }
 
     /// Provide an `io::ErrorKind`-like view for callers expecting legacy behavior.
     pub fn kind(&self) -> io::ErrorKind {
         match self {
-            KpvError::Io(err) => err.kind(),
-            KpvError::HomeNotConfigured => io::ErrorKind::NotFound,
-            KpvError::EnvFileNotFound => io::ErrorKind::NotFound,
-            KpvError::KeyNotFound(_) => io::ErrorKind::NotFound,
-            KpvError::EnvAlreadyExists => io::ErrorKind::AlreadyExists,
+            AppError::Io(err) => err.kind(),
+            AppError::ConfigError(_) => io::ErrorKind::InvalidInput,
+            AppError::ItemNotFound(_) => io::ErrorKind::NotFound,
         }
     }
 }

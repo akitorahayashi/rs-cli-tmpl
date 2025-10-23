@@ -1,10 +1,13 @@
 use clap::{Parser, Subcommand};
-use kpv::commands;
-use kpv::error::KpvError;
+use rs_cli_tmpl::commands;
+use rs_cli_tmpl::error::AppError;
 
 #[derive(Parser)]
-#[command(name = "kpv")]
-#[command(about = "Key-Pair Vault: Manage .env files across projects", long_about = None)]
+#[command(name = "rs-cli-tmpl")]
+#[command(
+    about = "Reference architecture for building Rust CLI tools",
+    long_about = None
+)]
 struct Cli {
     #[command(subcommand)]
     command: Commands,
@@ -12,37 +15,33 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Save the current .env file under a key
-    #[clap(alias = "sv")]
-    Save {
-        /// The key name to save the .env file under
-        key: String,
+    /// Add a new item to the template storage backend
+    #[clap(alias = "a")]
+    Add {
+        /// Identifier for the item
+        id: String,
+        /// Content to persist with the item
+        #[clap(short, long)]
+        content: String,
     },
-    /// Link a saved .env file to the current directory
-    #[clap(alias = "ln")]
-    Link {
-        /// The key name to link from
-        key: String,
-    },
-    /// List all saved keys
+    /// List all stored item identifiers
     #[clap(alias = "ls")]
     List,
-    /// Delete a saved key
+    /// Delete an item from storage
     #[clap(alias = "rm")]
     Delete {
-        /// The key name to delete
-        key: String,
+        /// Identifier for the item to delete
+        id: String,
     },
 }
 
 fn main() {
     let cli = Cli::parse();
 
-    let result: Result<(), KpvError> = match cli.command {
-        Commands::Save { key } => commands::save(&key),
-        Commands::Link { key } => commands::link(&key),
-        Commands::List => commands::list(),
-        Commands::Delete { key } => commands::delete(&key),
+    let result: Result<(), AppError> = match cli.command {
+        Commands::Add { id, content } => commands::add(&id, &content),
+        Commands::List => commands::list().map(|_| ()),
+        Commands::Delete { id } => commands::delete(&id),
     };
 
     if let Err(e) = result {
