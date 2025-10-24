@@ -48,43 +48,44 @@ impl TestContext {
         path
     }
 
-    /// Populate the default workspace with a `.env` file containing the provided contents.
-    pub fn write_env_file(&self, contents: &str) {
-        let env_path = self.work_dir().join(".env");
-        fs::write(&env_path, contents).expect("Failed to write .env file for test");
+    /// Populate the default workspace with an item file containing the provided contents.
+    pub fn write_item_file(&self, contents: &str) {
+        let item_path = self.work_dir().join("item.txt");
+        fs::write(&item_path, contents).expect("Failed to write item file for test");
     }
 
-    /// Create an empty `.env` file in the given directory.
-    pub fn touch_env_in<P: AsRef<Path>>(&self, dir: P) {
-        let path = dir.as_ref().join(".env");
-        fs::File::create(path).expect("Failed to touch .env file");
+    /// Create an item file in the given directory with the provided contents.
+    pub fn write_item_file_in<P: AsRef<Path>>(&self, dir: P, contents: &str) {
+        let path = dir.as_ref().join("item.txt");
+        fs::write(path, contents).expect("Failed to write item file");
     }
 
-    /// Build a command for invoking the compiled `kpv` binary within the default workspace.
+    /// Build a command for invoking the compiled `rs-cli-tmpl` binary within the default workspace.
     pub fn cli(&self) -> Command {
         self.cli_in(self.work_dir())
     }
 
-    /// Build a command for invoking the compiled `kpv` binary within a custom directory.
+    /// Build a command for invoking the compiled `rs-cli-tmpl` binary within a custom directory.
     pub fn cli_in<P: AsRef<Path>>(&self, dir: P) -> Command {
-        let mut cmd = Command::cargo_bin("kpv").expect("Failed to locate kpv binary");
+        let mut cmd =
+            Command::cargo_bin("rs-cli-tmpl").expect("Failed to locate rs-cli-tmpl binary");
         cmd.current_dir(dir.as_ref()).env("HOME", self.home());
         cmd
     }
 
-    /// Return the path where the CLI stores a saved `.env` file for the provided key.
-    pub fn saved_env_path(&self, key: &str) -> PathBuf {
-        self.home().join(".config").join("kpv").join(key).join(".env")
+    /// Return the path where the CLI stores a saved item file for the provided identifier.
+    pub fn saved_item_path(&self, id: &str) -> PathBuf {
+        self.home().join(".config").join("rs-cli-tmpl").join(id).join("item.txt")
     }
 
-    /// Assert that a saved `.env` contains the provided value snippet.
-    pub fn assert_saved_env_contains(&self, key: &str, expected_snippet: &str) {
-        let env_path = self.saved_env_path(key);
-        assert!(env_path.exists(), "Expected saved .env at {}", env_path.display());
-        let content = fs::read_to_string(&env_path).expect("Failed to read saved .env");
+    /// Assert that a saved item contains the provided value snippet.
+    pub fn assert_saved_item_contains(&self, id: &str, expected_snippet: &str) {
+        let item_path = self.saved_item_path(id);
+        assert!(item_path.exists(), "Expected saved item at {}", item_path.display());
+        let content = fs::read_to_string(&item_path).expect("Failed to read saved item");
         assert!(
             content.contains(expected_snippet),
-            "Saved .env for key `{key}` did not contain `{expected}`; content: {content}",
+            "Saved item for id `{id}` did not contain `{expected}`; content: {content}",
             expected = expected_snippet
         );
     }

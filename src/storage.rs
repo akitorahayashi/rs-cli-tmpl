@@ -1,14 +1,11 @@
-use crate::error::KpvError;
+use crate::error::AppError;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 
 pub(crate) trait Storage {
-    fn save_env(&self, key: &str, source_path: &Path) -> Result<(), KpvError>;
-    fn link_env(&self, key: &str, dest_path: &Path) -> Result<(), KpvError>;
-    fn list_keys(&self) -> Result<Vec<String>, KpvError>;
-    fn get_key_env_path(&self, key: &str) -> PathBuf;
-    fn check_key_exists(&self, key: &str) -> bool;
-    fn delete_env(&self, key: &str) -> Result<(), KpvError>;
+    fn add_item(&self, id: &str, content: &str) -> Result<(), AppError>;
+    fn list_items(&self) -> Result<Vec<String>, AppError>;
+    fn delete_item(&self, id: &str) -> Result<(), AppError>;
 }
 
 #[derive(Debug, Clone)]
@@ -17,109 +14,70 @@ pub(crate) struct FilesystemStorage {
 }
 
 impl FilesystemStorage {
-    pub fn new_default() -> Result<Self, KpvError> {
-        let home = std::env::var("HOME").map_err(|_| KpvError::HomeNotConfigured)?;
-        Ok(Self { root_path: PathBuf::from(home).join(".config").join("kpv") })
+    pub fn new_default() -> Result<Self, AppError> {
+        let home = std::env::var("HOME")
+            .map_err(|_| AppError::config_error("HOME environment variable not set"))?;
+        Ok(Self { root_path: PathBuf::from(home).join(".config").join("rs-cli-tmpl") })
     }
 
-    fn is_key_valid(key: &str) -> bool {
-        use std::path::{Component, Path};
-        !key.is_empty()
-            && key.chars().all(|c| c.is_alphanumeric() || c == '-')
-            && Path::new(key).components().all(|c| matches!(c, Component::Normal(_)))
-    }
-
-    fn ensure_valid_key(&self, key: &str) -> Result<(), KpvError> {
-        if Self::is_key_valid(key) {
+    fn ensure_valid_id(&self, id: &str) -> Result<(), AppError> {
+        if Self::is_id_valid(id) {
             Ok(())
         } else {
-            Err(KpvError::from(std::io::Error::new(
-                std::io::ErrorKind::InvalidInput,
-                format!("invalid key: {key}"),
-            )))
+            Err(AppError::config_error(format!("invalid item identifier: {id}")))
         }
     }
 
-    fn key_dir(&self, key: &str) -> PathBuf {
-        self.root_path.join(key)
+    fn is_id_valid(id: &str) -> bool {
+        !id.is_empty()
+            && id.chars().all(|c| c.is_alphanumeric() || c == '-')
+            && Path::new(id).components().all(|c| matches!(c, Component::Normal(_)))
     }
 
-    fn key_env_path(&self, key: &str) -> PathBuf {
-        self.key_dir(key).join(".env")
+    fn item_dir(&self, id: &str) -> PathBuf {
+        self.root_path.join(id)
+    }
+
+    fn item_file(&self, id: &str) -> PathBuf {
+        self.item_dir(id).join("item.txt")
     }
 }
 
 impl Storage for FilesystemStorage {
-    fn save_env(&self, key: &str, source_path: &Path) -> Result<(), KpvError> {
-        self.ensure_valid_key(key)?;
-        let destination_dir = self.key_dir(key);
-        fs::create_dir_all(&destination_dir)?;
-        let destination_file = destination_dir.join(".env");
-        fs::copy(source_path, &destination_file)?;
+    fn add_item(&self, id: &str, content: &str) -> Result<(), AppError> {
+        self.ensure_valid_id(id)?;
+        let directory = self.item_dir(id);
+        fs::create_dir_all(&directory)?;
+        fs::write(self.item_file(id), content)?;
         Ok(())
     }
 
-    fn link_env(&self, key: &str, dest_path: &Path) -> Result<(), KpvError> {
-        self.ensure_valid_key(key)?;
-        let source = self.get_key_env_path(key);
-        #[cfg(unix)]
-        {
-            match std::os::unix::fs::symlink(&source, dest_path) {
-                Ok(_) => Ok(()),
-                Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {
-                    Err(KpvError::EnvAlreadyExists)
-                }
-                Err(e) => Err(KpvError::from(e)),
-            }
-        }
-        #[cfg(windows)]
-        {
-            match std::os::windows::fs::symlink_file(&source, dest_path) {
-                Ok(_) => Ok(()),
-                Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => {
-                    Err(KpvError::EnvAlreadyExists)
-                }
-                Err(e) => Err(KpvError::from(e)),
-            }
-        }
-    }
-
-    fn list_keys(&self) -> Result<Vec<String>, KpvError> {
+    fn list_items(&self) -> Result<Vec<String>, AppError> {
         if !self.root_path.exists() {
             return Ok(Vec::new());
         }
 
-        let mut keys = Vec::new();
+        let mut ids = Vec::new();
         for entry in fs::read_dir(&self.root_path)? {
             let entry = entry?;
             if entry.path().is_dir()
                 && let Some(name) = entry.file_name().to_str()
             {
-                keys.push(name.to_string());
+                ids.push(name.to_string());
             }
         }
 
-        Ok(keys)
+        ids.sort();
+        Ok(ids)
     }
 
-    fn get_key_env_path(&self, key: &str) -> PathBuf {
-        self.key_env_path(key)
-    }
-
-    fn check_key_exists(&self, key: &str) -> bool {
-        if !Self::is_key_valid(key) {
-            return false;
+    fn delete_item(&self, id: &str) -> Result<(), AppError> {
+        self.ensure_valid_id(id)?;
+        let directory = self.item_dir(id);
+        if !directory.exists() {
+            return Err(AppError::ItemNotFound(id.to_string()));
         }
-        self.key_env_path(key).exists()
-    }
-
-    fn delete_env(&self, key: &str) -> Result<(), KpvError> {
-        self.ensure_valid_key(key)?;
-        let key_dir = self.key_dir(key);
-        if !key_dir.exists() {
-            return Ok(());
-        }
-        fs::remove_dir_all(&key_dir)?;
+        fs::remove_dir_all(directory)?;
         Ok(())
     }
 }
@@ -129,13 +87,13 @@ mod tests {
     use super::*;
     use serial_test::serial;
     use std::ffi::OsString;
-    use std::io::Write;
+    use std::fs;
+    use std::path::PathBuf;
     use tempfile::TempDir;
 
     struct TestContext {
         root: TempDir,
         original_home: Option<OsString>,
-        work_dir: PathBuf,
     }
 
     impl TestContext {
@@ -146,22 +104,15 @@ mod tests {
                 std::env::set_var("HOME", root.path());
             }
 
-            let work_dir = root.path().join("work");
-            fs::create_dir_all(&work_dir).expect("failed to create work dir");
-
-            Self { root, original_home, work_dir }
+            Self { root, original_home }
         }
 
         fn storage(&self) -> FilesystemStorage {
             FilesystemStorage::new_default().expect("storage initialization should succeed")
         }
 
-        fn work_dir(&self) -> &Path {
-            &self.work_dir
-        }
-
         fn storage_root(&self) -> PathBuf {
-            self.root.path().join(".config").join("kpv")
+            self.root.path().join(".config").join("rs-cli-tmpl")
         }
     }
 
@@ -180,54 +131,50 @@ mod tests {
 
     #[test]
     #[serial]
-    fn save_env_copies_file() {
+    fn add_item_persists_contents() {
         let ctx = TestContext::new();
         let storage = ctx.storage();
-        let source = ctx.work_dir().join(".env");
-        let mut file = fs::File::create(&source).expect("failed to create .env source");
-        writeln!(file, "TEST_VAR=test").expect("failed to write .env source");
 
-        storage.save_env("test-key", &source).expect("save_env should succeed");
+        storage.add_item("demo", "example content").expect("add_item should succeed");
 
-        let saved_path = ctx.storage_root().join("test-key").join(".env");
-        let content = fs::read_to_string(saved_path).expect("failed to read saved env");
-        assert!(content.contains("TEST_VAR=test"));
+        let saved = ctx.storage_root().join("demo").join("item.txt");
+        let content = fs::read_to_string(saved).expect("failed to read saved item");
+        assert_eq!(content, "example content");
     }
 
     #[test]
     #[serial]
-    fn save_env_missing_source_errors() {
+    fn list_items_returns_all_ids() {
         let ctx = TestContext::new();
         let storage = ctx.storage();
-        let missing = ctx.work_dir().join("missing.env");
-        let result = storage.save_env("test-key", &missing);
-        assert!(matches!(result, Err(KpvError::Io(_))));
+
+        storage.add_item("first", "one").unwrap();
+        storage.add_item("second", "two").unwrap();
+
+        let mut items = storage.list_items().expect("list_items succeeds");
+        items.sort();
+        assert_eq!(items, vec!["first", "second"]);
     }
 
     #[test]
     #[serial]
-    fn list_keys_empty_when_root_missing() {
+    fn delete_item_removes_directory() {
         let ctx = TestContext::new();
-        // Remove storage root to simulate fresh install
-        fs::remove_dir_all(ctx.storage_root()).ok();
-
         let storage = ctx.storage();
-        let keys = storage.list_keys().expect("list_keys should succeed with empty root");
-        assert!(keys.is_empty());
+
+        storage.add_item("temp", "data").unwrap();
+        storage.delete_item("temp").expect("delete succeeds");
+
+        assert!(!ctx.storage_root().join("temp").exists());
     }
 
     #[test]
     #[serial]
-    fn list_keys_collects_directories() {
+    fn delete_item_fails_if_not_exists() {
         let ctx = TestContext::new();
-        let storage_root = ctx.storage_root();
-        fs::create_dir_all(storage_root.join("key2")).unwrap();
-        fs::create_dir_all(storage_root.join("key1")).unwrap();
-        fs::File::create(storage_root.join("file.txt")).unwrap();
-
         let storage = ctx.storage();
-        let mut keys = storage.list_keys().expect("list_keys should succeed");
-        keys.sort();
-        assert_eq!(keys, vec!["key1", "key2"]);
+
+        let result = storage.delete_item("nonexistent");
+        assert!(matches!(result, Err(AppError::ItemNotFound(ref id)) if id == "nonexistent"));
     }
 }

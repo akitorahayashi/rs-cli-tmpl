@@ -1,5 +1,5 @@
 [package]
-name = "kpv"
+name = "rs-cli-tmpl"
 version = "0.1.0"
 edition = "2024"
 

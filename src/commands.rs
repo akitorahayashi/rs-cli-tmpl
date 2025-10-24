@@ -1,55 +1,41 @@
-use std::path::PathBuf;
-
-use crate::core::{self, Execute};
-use crate::error::KpvError;
+use crate::core::{Execute, add_item::AddItem, delete_item::DeleteItem, list_items::ListItems};
+use crate::error::AppError;
 use crate::storage::FilesystemStorage;
 
-/// Save command: Copy ./.env to ~/.config/kpv/<key>/.env
-pub fn save(key: &str) -> Result<(), KpvError> {
+/// Add a new item to storage using the default filesystem backend.
+pub fn add(id: &str, content: &str) -> Result<(), AppError> {
     let storage = FilesystemStorage::new_default()?;
-    let source = PathBuf::from(".env");
-    let command = core::save::SaveCommand { key, source_path: &source };
+    let command = AddItem { id, content };
 
     command.execute(&storage)?;
-    println!("✅ Saved: ./.env -> '{}'", key);
+    println!("✅ Added item '{id}'");
     Ok(())
 }
 
-/// Link command: Create symlink from ~/.config/kpv/<key>/.env to ./.env
-pub fn link(key: &str) -> Result<(), KpvError> {
+/// List all stored item identifiers.
+pub fn list() -> Result<Vec<String>, AppError> {
     let storage = FilesystemStorage::new_default()?;
-    let dest = PathBuf::from(".env");
-    let command = core::link::LinkCommand { key, dest_path: &dest };
+    let command = ListItems;
+    let items = command.execute(&storage)?;
 
-    command.execute(&storage)?;
-    println!("🔗 Linked: '{}' -> ./.env", key);
-    Ok(())
-}
-
-/// List command: List all keys in ~/.config/kpv/
-pub fn list() -> Result<(), KpvError> {
-    let storage = FilesystemStorage::new_default()?;
-    let command = core::list::ListCommand;
-    let keys = command.execute(&storage)?;
-
-    println!("📦 Saved keys:");
-    if keys.is_empty() {
+    println!("📦 Stored items:");
+    if items.is_empty() {
         println!("(none)");
     } else {
-        for key in keys {
-            println!("- {}", key);
+        for id in &items {
+            println!("- {id}");
         }
     }
 
-    Ok(())
+    Ok(items)
 }
 
-/// Delete command: Remove a saved key from ~/.config/kpv/<key>
-pub fn delete(key: &str) -> Result<(), KpvError> {
+/// Delete an item from storage.
+pub fn delete(id: &str) -> Result<(), AppError> {
     let storage = FilesystemStorage::new_default()?;
-    let command = core::delete::DeleteCommand { key };
+    let command = DeleteItem { id };
 
     command.execute(&storage)?;
-    println!("🗑️  Deleted: '{}'", key);
+    println!("🗑️  Deleted item '{id}'");
     Ok(())
 }
