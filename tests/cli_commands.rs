@@ -79,3 +79,14 @@ fn add_with_invalid_id_fails() {
         .failure()
         .stderr(predicate::str::contains("invalid item identifier"));
 }
+
+#[test]
+#[serial]
+fn version_flag_works() {
+    let ctx = TestContext::new();
+
+    ctx.cli()
+        .arg("--version")
+        .assert()
+        .success();
+}

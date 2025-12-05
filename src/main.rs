@@ -4,6 +4,7 @@ use rs_cli_tmpl::error::AppError;
 
 #[derive(Parser)]
 #[command(name = "rs-cli-tmpl")]
+#[command(version)]
 #[command(
     about = "Reference architecture for building Rust CLI tools",
     long_about = None
