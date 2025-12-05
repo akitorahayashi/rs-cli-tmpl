@@ -40,6 +40,15 @@ cargo build --release
 
 The optimized binary will be created at `target/release/rs-cli-tmpl`.
 
+## Usage
+
+```bash
+rs-cli-tmpl --version    # Show version information
+rs-cli-tmpl add <id>     # Add an item
+rs-cli-tmpl list         # List items
+rs-cli-tmpl delete <id>  # Delete an item
+```
+
 ## Development Commands
 
 - `cargo build` &mdash; build a debug binary.
