@@ -85,8 +85,5 @@ fn add_with_invalid_id_fails() {
 fn version_flag_works() {
     let ctx = TestContext::new();
 
-    ctx.cli()
-        .arg("--version")
-        .assert()
-        .success();
+    ctx.cli().arg("--version").assert().success();
 }
