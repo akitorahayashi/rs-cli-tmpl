@@ -1,3 +1,4 @@
+use crate::config::Config;
 use crate::error::AppError;
 use std::fs;
 use std::path::{Component, Path, PathBuf};
@@ -14,10 +15,14 @@ pub(crate) struct FilesystemStorage {
 }
 
 impl FilesystemStorage {
+    /// Create a new storage with the given configuration.
+    pub fn new(config: &Config) -> Self {
+        Self { root_path: config.storage_path.clone() }
+    }
+
+    /// Create storage with default configuration.
     pub fn new_default() -> Result<Self, AppError> {
-        let home = std::env::var("HOME")
-            .map_err(|_| AppError::config_error("HOME environment variable not set"))?;
-        Ok(Self { root_path: PathBuf::from(home).join(".config").join("rs-cli-tmpl") })
+        Ok(Self::new(&Config::default()))
     }
 
     fn ensure_valid_id(&self, id: &str) -> Result<(), AppError> {
@@ -85,30 +90,24 @@ impl Storage for FilesystemStorage {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serial_test::serial;
-    use std::ffi::OsString;
+    use crate::config::Config;
     use std::fs;
     use std::path::PathBuf;
     use tempfile::TempDir;
 
     struct TestContext {
         root: TempDir,
-        original_home: Option<OsString>,
     }
 
     impl TestContext {
         fn new() -> Self {
             let root = TempDir::new().expect("failed to create temp dir");
-            let original_home = std::env::var_os("HOME");
-            unsafe {
-                std::env::set_var("HOME", root.path());
-            }
-
-            Self { root, original_home }
+            Self { root }
         }
 
         fn storage(&self) -> FilesystemStorage {
-            FilesystemStorage::new_default().expect("storage initialization should succeed")
+            let config = Config::with_path(self.storage_root());
+            FilesystemStorage::new(&config)
         }
 
         fn storage_root(&self) -> PathBuf {
@@ -116,21 +115,7 @@ mod tests {
         }
     }
 
-    impl Drop for TestContext {
-        fn drop(&mut self) {
-            match &self.original_home {
-                Some(value) => unsafe {
-                    std::env::set_var("HOME", value);
-                },
-                None => unsafe {
-                    std::env::remove_var("HOME");
-                },
-            }
-        }
-    }
-
     #[test]
-    #[serial]
     fn add_item_persists_contents() {
         let ctx = TestContext::new();
         let storage = ctx.storage();
@@ -143,7 +128,6 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn list_items_returns_all_ids() {
         let ctx = TestContext::new();
         let storage = ctx.storage();
@@ -157,7 +141,6 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn delete_item_removes_directory() {
         let ctx = TestContext::new();
         let storage = ctx.storage();
@@ -169,7 +152,6 @@ mod tests {
     }
 
     #[test]
-    #[serial]
     fn delete_item_fails_if_not_exists() {
         let ctx = TestContext::new();
         let storage = ctx.storage();

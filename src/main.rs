@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
-use rs_cli_tmpl::commands;
 use rs_cli_tmpl::error::AppError;
+use rs_cli_tmpl::{add, delete, list};
 
 #[derive(Parser)]
 #[command(name = "rs-cli-tmpl")]
@@ -32,9 +32,9 @@ fn main() {
     let cli = Cli::parse();
 
     let result: Result<(), AppError> = match cli.command {
-        Commands::Add { id, content } => commands::add(&id, &content),
-        Commands::List => commands::list().map(|_| ()),
-        Commands::Delete { id } => commands::delete(&id),
+        Commands::Add { id, content } => add(&id, &content),
+        Commands::List => list().map(|_| ()),
+        Commands::Delete { id } => delete(&id),
     };
 
     if let Err(e) = result {

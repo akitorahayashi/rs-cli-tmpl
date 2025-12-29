@@ -1,4 +1,4 @@
-use crate::core::Execute;
+use crate::commands::Execute;
 use crate::error::AppError;
 use crate::storage::Storage;
 
@@ -16,7 +16,7 @@ impl Execute<()> for DeleteItem<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::core::test_support::MockStorage;
+    use crate::commands::test_support::MockStorage;
 
     #[test]
     fn delete_item_forwards_to_storage() {
