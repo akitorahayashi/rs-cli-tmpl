@@ -16,24 +16,16 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Add a new item to the template storage backend
-    #[clap(alias = "a")]
+    #[clap(visible_alias = "a")]
     Add {
-        /// Identifier for the item
         id: String,
-        /// Content to persist with the item
         #[clap(short, long)]
         content: String,
     },
-    /// List all stored item identifiers
-    #[clap(alias = "ls")]
+    #[clap(visible_alias = "ls")]
     List,
-    /// Delete an item from storage
-    #[clap(alias = "rm")]
-    Delete {
-        /// Identifier for the item to delete
-        id: String,
-    },
+    #[clap(visible_alias = "rm")]
+    Delete { id: String },
 }
 
 fn main() {

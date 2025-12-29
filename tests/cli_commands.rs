@@ -91,3 +91,15 @@ fn version_flag_works() {
         .success()
         .stdout(predicate::str::contains(env!("CARGO_PKG_VERSION")));
 }
+
+#[test]
+#[serial]
+fn help_lists_visible_aliases() {
+    let ctx = TestContext::new();
+
+    ctx.cli().arg("--help").assert().success().stdout(
+        predicate::str::contains("[aliases: a]")
+            .and(predicate::str::contains("[aliases: ls]"))
+            .and(predicate::str::contains("[aliases: rm]")),
+    );
+}
