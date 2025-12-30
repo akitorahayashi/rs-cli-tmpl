@@ -22,7 +22,8 @@ impl FilesystemStorage {
 
     /// Create storage with default configuration.
     pub fn new_default() -> Result<Self, AppError> {
-        Ok(Self::new(&Config::default()))
+        let config = Config::new_default()?;
+        Ok(Self::new(&config))
     }
 
     fn ensure_valid_id(&self, id: &str) -> Result<(), AppError> {

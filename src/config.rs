@@ -1,5 +1,6 @@
 //! Application configuration for rs-cli-tmpl.
 
+use crate::error::AppError;
 use std::path::PathBuf;
 
 /// Application-wide configuration.
@@ -14,12 +15,14 @@ impl Config {
     pub fn with_path(path: PathBuf) -> Self {
         Self { storage_path: path }
     }
-}
 
-impl Default for Config {
-    /// Create configuration with default storage path (~/.config/rs-cli-tmpl).
-    fn default() -> Self {
-        let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
-        Self { storage_path: PathBuf::from(home).join(".config").join("rs-cli-tmpl") }
+    /// Create configuration using the HOME-based config directory.
+    ///
+    /// Uses $HOME/.config/rs-cli-tmpl for consistency across platforms and tests.
+    pub fn new_default() -> Result<Self, AppError> {
+        let home = std::env::var("HOME")
+            .map_err(|_| AppError::config_error("HOME environment variable not set"))?;
+        let storage_path = PathBuf::from(home).join(".config").join("rs-cli-tmpl");
+        Ok(Self { storage_path })
     }
 }
