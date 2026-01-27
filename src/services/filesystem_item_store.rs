@@ -50,6 +50,7 @@ impl ItemStore for FilesystemItemStore {
             let entry = entry?;
             if entry.path().is_dir()
                 && let Some(name) = entry.file_name().to_str()
+                && ItemId::new(name).is_ok()
             {
                 ids.push(name.to_string());
             }
