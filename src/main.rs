@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use rs_cli_tmpl::error::AppError;
+use rs_cli_tmpl::AppError;
 use rs_cli_tmpl::{add, delete, list};
 
 #[derive(Parser)]

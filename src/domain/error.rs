@@ -10,6 +10,8 @@ pub enum AppError {
     ConfigError(String),
     /// Raised when a requested item cannot be located in storage.
     ItemNotFound(String),
+    /// Raised when an item identifier fails validation.
+    InvalidItemId(String),
 }
 
 impl Display for AppError {
@@ -18,6 +20,7 @@ impl Display for AppError {
             AppError::Io(err) => write!(f, "{}", err),
             AppError::ConfigError(message) => write!(f, "{message}"),
             AppError::ItemNotFound(id) => write!(f, "Item '{id}' was not found"),
+            AppError::InvalidItemId(id) => write!(f, "invalid item identifier: {id}"),
         }
     }
 }
@@ -26,7 +29,9 @@ impl Error for AppError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         match self {
             AppError::Io(err) => Some(err),
-            AppError::ConfigError(_) | AppError::ItemNotFound(_) => None,
+            AppError::ConfigError(_) | AppError::ItemNotFound(_) | AppError::InvalidItemId(_) => {
+                None
+            }
         }
     }
 }
@@ -38,7 +43,7 @@ impl From<io::Error> for AppError {
 }
 
 impl AppError {
-    pub(crate) fn config_error<S: Into<String>>(message: S) -> Self {
+    pub fn config_error<S: Into<String>>(message: S) -> Self {
         AppError::ConfigError(message.into())
     }
 
@@ -46,7 +51,7 @@ impl AppError {
     pub fn kind(&self) -> io::ErrorKind {
         match self {
             AppError::Io(err) => err.kind(),
-            AppError::ConfigError(_) => io::ErrorKind::InvalidInput,
+            AppError::ConfigError(_) | AppError::InvalidItemId(_) => io::ErrorKind::InvalidInput,
             AppError::ItemNotFound(_) => io::ErrorKind::NotFound,
         }
     }

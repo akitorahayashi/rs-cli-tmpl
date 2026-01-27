@@ -1,34 +1,42 @@
 //! Library entry point exposing the core command handlers.
 
-mod commands;
-pub mod config;
-pub mod error;
-mod storage;
+pub mod app;
+pub mod domain;
+pub mod ports;
+pub mod services;
 
-use commands::{Execute, add_item::AddItem, delete_item::DeleteItem, list_items::ListItems};
-use error::AppError;
-use storage::FilesystemStorage;
+#[cfg(test)]
+pub(crate) mod testing;
 
-/// Create the default storage instance.
-fn default_storage() -> Result<FilesystemStorage, AppError> {
-    FilesystemStorage::new_default()
+use app::{
+    AppContext, Command,
+    commands::{AddItem, DeleteItem, ListItems},
+};
+use services::FilesystemItemStore;
+
+pub use domain::AppError;
+
+/// Create the default application context.
+fn default_context() -> Result<AppContext<FilesystemItemStore>, AppError> {
+    let store = FilesystemItemStore::from_env()?;
+    Ok(AppContext::new(store))
 }
 
 /// Add a new item to storage using the default filesystem backend.
 pub fn add(id: &str, content: &str) -> Result<(), AppError> {
-    let storage = default_storage()?;
+    let ctx = default_context()?;
     let command = AddItem { id, content };
 
-    command.execute(&storage)?;
+    command.execute(&ctx)?;
     println!("✅ Added item '{id}'");
     Ok(())
 }
 
 /// List all stored item identifiers.
 pub fn list() -> Result<Vec<String>, AppError> {
-    let storage = default_storage()?;
+    let ctx = default_context()?;
     let command = ListItems;
-    let items = command.execute(&storage)?;
+    let items = command.execute(&ctx)?;
 
     println!("📦 Stored items:");
     if items.is_empty() {
@@ -44,10 +52,10 @@ pub fn list() -> Result<Vec<String>, AppError> {
 
 /// Delete an item from storage.
 pub fn delete(id: &str) -> Result<(), AppError> {
-    let storage = default_storage()?;
+    let ctx = default_context()?;
     let command = DeleteItem { id };
 
-    command.execute(&storage)?;
+    command.execute(&ctx)?;
     println!("🗑️  Deleted item '{id}'");
     Ok(())
 }
