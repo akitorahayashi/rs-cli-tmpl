@@ -7,15 +7,15 @@ well-tested foundation.
 
 ## Architectural Highlights
 
-- **Two-tier structure** &mdash; `src/main.rs` handles CLI parsing, `src/lib.rs` exposes public 
-  command APIs, and `src/commands/` keeps business rules testable via the `Execute` trait.
-- **I/O abstraction** &mdash; `src/storage.rs` defines a `Storage` trait and a `FilesystemStorage`
-  implementation rooted at `~/.config/rs-cli-tmpl`, making it easy to swap storage backends.
-- **Configuration management** &mdash; `src/config.rs` provides a `Config` struct for externalized
-  configuration, enabling easy testing with custom storage paths.
-- **Robust testing strategy** &mdash; unit tests live next to their modules, `src/commands/test_support.rs`
-  offers a `MockStorage` for command logic tests (with `#[cfg(test)]`), and the `tests/` directory 
-  provides integration suites for both the library API and the CLI binary.
+- **Layered architecture** &mdash; `domain/` contains pure invariants, `ports/` defines trait
+  boundaries, `services/` provides implementations, and `app/` wires commands with `AppContext`.
+- **I/O abstraction** &mdash; `src/ports/item_store.rs` defines an `ItemStore` trait and
+  `src/services/filesystem_item_store.rs` implements it, rooted at `~/.config/rs-cli-tmpl`.
+- **Configuration management** &mdash; `src/services/storage_settings.rs` provides storage path
+  configuration, enabling easy testing with custom paths.
+- **Robust testing strategy** &mdash; unit tests live next to their modules, `src/testing/`
+  provides a `MockItemStore` for command logic tests (with `#[cfg(test)]`), and the `tests/`
+  directory provides integration suites for both the library API and the CLI binary.
 
 The template ships with minimal sample commands (`add`, `list`, and `delete`) that show how to
 thread dependencies through each layer. Replace or extend them with your own domain logic while
@@ -62,8 +62,8 @@ rs-cli-tmpl delete <id>  # Delete an item
 ## Testing Culture
 
 - **Unit Tests**: Live alongside their modules inside `src/`, covering helper utilities and
-  filesystem boundaries.
-- **Command Logic Tests**: Use the mock storage in `src/commands/test_support.rs` (conditionally
+  domain invariants.
+- **Command Logic Tests**: Use the mock store in `src/testing/mock_item_store.rs` (conditionally
   compiled with `#[cfg(test)]`) to exercise command implementations without touching the filesystem.
 - **Integration Tests**: Located in the `tests/` directory. Separate crates cover the public
   library API (`tests/commands_api.rs`) and CLI workflows (`tests/cli_commands.rs`,
@@ -74,20 +74,29 @@ rs-cli-tmpl delete <id>  # Delete an item
 ```
 rs-cli-tmpl/
 ├── src/
-│   ├── main.rs           # CLI parsing (clap)
-│   ├── lib.rs            # Public API + default_storage() helper
-│   ├── config.rs         # Config struct for externalized configuration
-│   ├── error.rs          # AppError definitions
-│   ├── storage.rs        # Storage trait + FilesystemStorage
-│   └── commands/         # Command implementations
-│       ├── mod.rs        # Execute trait
-│       ├── add_item.rs
-│       ├── list_items.rs
-│       ├── delete_item.rs
-│       └── test_support.rs  # MockStorage (#[cfg(test)])
-└── tests/
-    ├── common/           # Shared test fixtures
-    └── ...
+│   ├── main.rs                # CLI parsing (clap)
+│   ├── lib.rs                 # Public API + default_context() helper
+│   ├── app/                   # Application layer
+│   │   ├── command.rs         # Command trait
+│   │   ├── context.rs         # AppContext
+│   │   └── commands/          # Command implementations
+│   │       ├── add_item.rs
+│   │       ├── list_items.rs
+│   │       └── delete_item.rs
+│   ├── domain/                # Pure business invariants
+│   │   ├── error.rs           # AppError definitions
+│   │   └── item_id.rs         # ItemId validation
+│   ├── ports/                 # Trait boundaries
+│   │   └── item_store.rs      # ItemStore trait
+│   ├── services/              # Implementations
+│   │   ├── filesystem_item_store.rs
+│   │   └── storage_settings.rs
+│   └── testing/               # Test infrastructure (#[cfg(test)])
+│       └── mock_item_store.rsapp/commands/` with your own business logic.
+2. Add domain invariants in `src/domain/` and ports in `src/ports/`.
+3. Implement services in `src/services/` and wire them in `src/lib.rs`.
+4. Update the CLI definitions in `src/main.rs` to match your command surface.
+5   └── ...
 ```
 
 ## Adapting the Template

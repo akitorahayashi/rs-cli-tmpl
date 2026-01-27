@@ -1,7 +1,7 @@
 # rs-cli-tmpl Development Overview
 
 ## Project Summary
-`rs-cli-tmpl` is a reference template for building Rust-based command line tools with a clean, layered architecture. It demonstrates how to separate concerns across the CLI interface, application commands, pure business logic, and I/O abstractions, providing a well-tested foundation for new projects. The template includes sample commands (`add`, `list`, and `delete`) that can be replaced or extended with custom domain logic.
+`rs-cli-tmpl` is a reference template for building Rust-based command line tools with a clean, layered architecture. It demonstrates how to separate concerns across domain invariants, ports, services, and application commands, providing a well-tested foundation for new projects. The template includes sample commands (`add`, `list`, and `delete`) that can be replaced or extended with custom domain logic.
 
 ## Tech Stack
 - **Language**: Rust
@@ -30,13 +30,13 @@
 - **Test**: `cargo test --all-targets --all-features`
 
 ## Testing Strategy
-- **Unit Tests**: Located within the `src/` directory alongside the code they test, covering helper utilities and filesystem boundaries.
-- **Command Logic Tests**: Found in `src/commands/`, utilizing mock storage (`src/commands/test_support.rs` with `#[cfg(test)]`) to ensure business logic is tested in isolation via the `Execute` trait.
+- **Unit Tests**: Located within the `src/` directory alongside the code they test, covering domain invariants and service implementations.
+- **Command Logic Tests**: Found in `src/app/commands/`, utilizing `MockItemStore` from `src/testing/` (compiled with `#[cfg(test)]`) to ensure business logic is tested in isolation via the `Command` trait.
 - **Integration Tests**: Housed in the `tests/` directory, these tests cover the public library API and CLI user flows from an external perspective. Separate crates for API (`tests/commands_api.rs`) and CLI workflows (`tests/cli_commands.rs`, `tests/cli_flow.rs`), with shared fixtures in `tests/common/mod.rs`.
 - **CI**: GitHub Actions automatically runs build, linting, and test workflows, as defined in `.github/workflows/`.
 
 ## Architectural Highlights
-- **Two-tier structure**: `src/main.rs` handles CLI parsing, `src/lib.rs` exposes public APIs and the `default_storage()` helper, and `src/commands/` keeps business rules testable.
-- **I/O abstraction**: `src/storage.rs` defines a `Storage` trait and a `FilesystemStorage` implementation rooted at `~/.config/rs-cli-tmpl`, making it easy to swap storage backends.
-- **Configuration management**: `src/config.rs` provides a `Config` struct for externalized configuration, enabling custom storage paths for testing.
+- **Layered architecture**: `domain/` contains pure invariants (no I/O), `ports/` defines trait boundaries, `services/` provides implementations, and `app/` wires commands with `AppContext`.
+- **I/O abstraction**: `src/ports/item_store.rs` defines an `ItemStore` trait and `src/services/filesystem_item_store.rs` implements it, rooted at `~/.config/rs-cli-tmpl`.
+- **Configuration management**: `src/services/storage_settings.rs` provides storage path configuration, enabling custom paths for testing.
 - **Storage Layout**: Items are stored under `~/.config/rs-cli-tmpl/<id>/item.txt`.
