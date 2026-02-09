@@ -22,10 +22,8 @@
 - **Functions and Variables**: `snake_case` (e.g., `run_tests`, `test_context`)
 - **Modules**: `snake_case` (e.g., `cli_commands.rs`)
 
-## Key Commands
-- **Build (Debug)**: `cargo build`
-- **Build (Release)**: `cargo build --release`
-- **Format Check**: `cargo fmt --check`
+## Verify Commands
+- **Format**: `cargo fmt --check`
 - **Lint**: `cargo clippy --all-targets --all-features -- -D warnings`
 - **Test**: `cargo test --all-targets --all-features`
 
