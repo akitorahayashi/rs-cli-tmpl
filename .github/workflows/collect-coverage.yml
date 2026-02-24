@@ -16,9 +16,19 @@ jobs:
 
       - name: Setup environment
         uses: ./.github/actions/setup
+        with:
+          rust-version: 1.90.0
+
+      - name: Cache tarpaulin
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/cargo-tarpaulin
+            ~/.cargo/registry
+          key: ${{ runner.os }}-tarpaulin-0.35.2
 
       - name: Install tarpaulin
-        run: cargo install cargo-tarpaulin --version 0.35.1 --locked
+        run: cargo install cargo-tarpaulin --version 0.35.2 --locked
 
       - name: Generate coverage
         run: cargo tarpaulin --out Xml --output-dir coverage --all-features --fail-under 30
