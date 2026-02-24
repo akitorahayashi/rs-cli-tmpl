@@ -18,3 +18,7 @@ jobs:
   test:
     name: Test
     uses: ./.github/workflows/run-tests.yml
+
+  coverage:
+    name: Coverage
+    uses: ./.github/workflows/collect-coverage.yml
