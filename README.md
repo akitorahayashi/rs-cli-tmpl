@@ -52,11 +52,13 @@ rs-cli-tmpl delete <id>  # Delete an item
 
 ## Development Commands
 
+- `just setup` &mdash; install pinned development tools from `mise.toml`.
 - `cargo build` &mdash; build a debug binary.
 - `cargo build --release` &mdash; build the optimized release binary.
 - `cargo fmt` &mdash; format code using rustfmt.
 - `cargo fmt --check && cargo clippy --all-targets --all-features -- -D warnings` &mdash; format check and lint with clippy.
 - `cargo test --all-targets --all-features` &mdash; run all tests.
+- `just setup && mise exec -- cargo tarpaulin --out Xml --output-dir coverage --all-features --fail-under 30` &mdash; run coverage with pinned tarpaulin.
 - `cargo fetch --locked` &mdash; pre-fetch dependencies.
 
 ## Testing Culture
