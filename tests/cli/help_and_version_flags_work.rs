@@ -19,6 +19,7 @@ fn version_flag_works() {
 fn help_lists_visible_aliases() {
     let ctx = TestContext::new();
 
+    // Keep in sync with aliases defined in the CLI builder.
     ctx.cli().arg("--help").assert().success().stdout(
         predicate::str::contains("[aliases: a]")
             .and(predicate::str::contains("[aliases: ls]"))
