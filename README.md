@@ -7,13 +7,13 @@ well-tested foundation.
 
 ## Architectural Highlights
 
-- **Layered architecture** &mdash; `domain/` contains pure invariants, `ports/` defines trait
+- Layered architecture: `domain/` contains pure invariants, `ports/` defines trait
   boundaries, `adapters/` provides implementations, and `app/` wires commands with `AppContext`.
-- **I/O abstraction** &mdash; `src/ports/item_store.rs` defines an `ItemStore` trait and
+- I/O abstraction: `src/ports/item_store.rs` defines an `ItemStore` trait and
   `src/adapters/filesystem_item_store.rs` implements it, rooted at `~/.config/rs-cli-tmpl`.
-- **Configuration management** &mdash; `src/adapters/storage_settings.rs` provides storage path
+- Configuration management: `src/adapters/storage_settings.rs` provides storage path
   configuration, enabling easy testing with custom paths.
-- **Robust testing strategy** &mdash; unit tests live next to their modules, `src/testing/`
+- Robust testing strategy: unit tests live next to their modules, `src/testing/`
   provides a `MockItemStore` for command logic tests (with `#[cfg(test)]`), and the `tests/`
   directory provides integration suites for both the library API and the CLI binary.
 
@@ -52,28 +52,29 @@ rs-cli-tmpl delete <id>  # Delete an item
 
 ## Development Commands
 
-- `just setup` &mdash; install pinned development tools from `mise.toml`.
-- `cargo build` &mdash; build a debug binary.
-- `cargo build --release` &mdash; build the optimized release binary.
-- `cargo fmt` &mdash; format code using rustfmt.
-- `cargo fmt --check && cargo clippy --all-targets --all-features -- -D warnings` &mdash; format check and lint with clippy.
-- `cargo test --all-targets --all-features` &mdash; run all tests.
-- `just setup && mise exec -- cargo tarpaulin --out Xml --output-dir coverage --all-features --fail-under 30` &mdash; run coverage with pinned tarpaulin.
-- `cargo fetch --locked` &mdash; pre-fetch dependencies.
+- `just setup`: install pinned development tools from `mise.toml`.
+- `cargo build`: build a debug binary.
+- `cargo build --release`: build the optimized release binary.
+- `cargo fmt`: format code using rustfmt.
+- `cargo fmt --check && cargo clippy --all-targets --all-features -- -D warnings`: format check and lint with clippy.
+- `cargo test --all-targets --all-features`: run all tests.
+- `just setup && mise exec -- cargo tarpaulin --out Xml --output-dir coverage --all-features --fail-under 30`: run coverage with pinned tarpaulin.
+- `cargo fetch --locked`: pre-fetch dependencies.
 
 ## Testing Culture
 
-- **Unit Tests**: Live alongside their modules inside `src/`, covering helper utilities and
+- Unit Tests: Live alongside their modules inside `src/`, covering helper utilities and
   domain invariants.
-- **Command Logic Tests**: Use the mock store in `src/testing/mock_item_store.rs` (conditionally
+- Command Logic Tests: Use the mock store in `src/testing/mock_item_store.rs` (conditionally
   compiled with `#[cfg(test)]`) to exercise command implementations without touching the filesystem.
-- **Integration Tests**: Located in the `tests/` directory. Separate crates cover the public
-  library API (`tests/commands_api.rs`) and CLI workflows (`tests/cli_commands.rs`,
-  `tests/cli_flow.rs`). Shared fixtures live in `tests/common/mod.rs`.
+- Integration Tests: Located in the `tests/` directory with explicit executable boundaries:
+  `tests/cli.rs` for CLI flows and `tests/library.rs` for public API behavior. Behavior-oriented
+  modules live under `tests/cli/` and `tests/library/`; shared fixtures live in
+  `tests/harness/test_context.rs`.
 
 ## Project Structure
 
-```
+```text
 rs-cli-tmpl/
 ├── src/
 │   ├── main.rs                # CLI parsing (clap)
@@ -90,20 +91,25 @@ rs-cli-tmpl/
 │   │   └── item_id.rs         # ItemId validation
 │   ├── ports/                 # Trait boundaries
 │   │   └── item_store.rs      # ItemStore trait
-│   ├── adapters/              # Implementations
+│   ├── adapters/              # I/O implementations
 │   │   ├── filesystem_item_store.rs
 │   │   └── storage_settings.rs
 │   └── testing/               # Test infrastructure (#[cfg(test)])
-│       └── mock_item_store.rsapp/commands/` with your own business logic.
-2. Add domain invariants in `src/domain/` and ports in `src/ports/`.
-3. Implement adapters in `src/adapters/` and wire them in `src/lib.rs`.
-4. Update the CLI definitions in `src/main.rs` to match your command surface.
-5   └── ...
+│       └── mock_item_store.rs
+├── tests/
+│   ├── cli.rs                 # Integration test target: CLI boundary
+│   ├── library.rs             # Integration test target: public API boundary
+│   ├── cli/                   # CLI behavior specs
+│   ├── library/               # Library behavior specs
+│   └── harness/               # Shared integration fixtures
+└── docs/
+    └── architecture/
+        └── ARCHITECTURE_BOUNDARY.md
 ```
 
 ## Adapting the Template
 
-1. Replace the sample commands in `src/commands/` with your own business logic.
+1. Replace the sample commands in `src/app/commands/` with your own business logic.
 2. Extend `src/lib.rs` to wire new dependencies and expose public APIs.
 3. Update the CLI definitions in `src/main.rs` to match your command surface.
 4. Refresh the integration tests and documentation to describe the new behavior.

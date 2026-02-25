@@ -1,9 +1,9 @@
 use std::fs;
 use std::path::PathBuf;
 
+use crate::adapters::StorageSettings;
 use crate::domain::{AppError, ItemId};
 use crate::ports::ItemStore;
-use crate::adapters::StorageSettings;
 
 /// Filesystem-based implementation of `ItemStore`.
 #[derive(Debug, Clone)]
