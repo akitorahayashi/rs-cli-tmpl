@@ -1,7 +1,7 @@
 # rs-cli-tmpl Development Overview
 
 ## Project Summary
-`rs-cli-tmpl` is a reference template for building Rust-based command line tools with a clean, layered architecture. It demonstrates how to separate concerns across domain invariants, ports, services, and application commands, providing a well-tested foundation for new projects. The template includes sample commands (`add`, `list`, and `delete`) that can be replaced or extended with custom domain logic.
+`rs-cli-tmpl` is a reference template for building Rust-based command line tools with a clean, layered architecture. It demonstrates how to separate concerns across domain invariants, ports, adapters, and application commands, providing a well-tested foundation for new projects. The template includes sample commands (`add`, `list`, and `delete`) that can be replaced or extended with custom domain logic.
 
 ## Tech Stack
 - **Language**: Rust
@@ -28,13 +28,13 @@
 - **Test**: `cargo test --all-targets --all-features`
 
 ## Testing Strategy
-- **Unit Tests**: Located within the `src/` directory alongside the code they test, covering domain invariants and service implementations.
+- **Unit Tests**: Located within the `src/` directory alongside the code they test, covering domain invariants and adapter implementations.
 - **Command Logic Tests**: Found in `src/app/commands/`, utilizing `MockItemStore` from `src/testing/` (compiled with `#[cfg(test)]`) to ensure business logic is tested in isolation via the `Command` trait.
 - **Integration Tests**: Housed in the `tests/` directory, organised into two explicit boundaries: `tests/cli.rs` for CLI user flows and `tests/library.rs` for the public library API. Behavior-oriented modules live under `tests/cli/` and `tests/library/`; shared fixtures reside in `tests/harness/test_context.rs`.
 - **CI**: GitHub Actions automatically runs build, linting, and test workflows, as defined in `.github/workflows/`.
 
 ## Architectural Highlights
-- **Layered architecture**: `domain/` contains pure invariants (no I/O), `ports/` defines trait boundaries, `services/` provides implementations, and `app/` wires commands with `AppContext`.
-- **I/O abstraction**: `src/ports/item_store.rs` defines an `ItemStore` trait and `src/services/filesystem_item_store.rs` implements it, rooted at `~/.config/rs-cli-tmpl`.
-- **Configuration management**: `src/services/storage_settings.rs` provides storage path configuration, enabling custom paths for testing.
+- **Layered architecture**: `domain/` contains pure invariants (no I/O), `ports/` defines trait boundaries, `adapters/` provides implementations, and `app/` wires commands with `AppContext`.
+- **I/O abstraction**: `src/ports/item_store.rs` defines an `ItemStore` trait and `src/adapters/filesystem_item_store.rs` implements it, rooted at `~/.config/rs-cli-tmpl`.
+- **Configuration management**: `src/adapters/storage_settings.rs` provides storage path configuration, enabling custom paths for testing.
 - **Storage Layout**: Items are stored under `~/.config/rs-cli-tmpl/<id>/item.txt`.
