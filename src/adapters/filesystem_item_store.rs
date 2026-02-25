@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 use crate::domain::{AppError, ItemId};
 use crate::ports::ItemStore;
-use crate::services::StorageSettings;
+use crate::adapters::StorageSettings;
 
 /// Filesystem-based implementation of `ItemStore`.
 #[derive(Debug, Clone)]

@@ -8,10 +8,10 @@ well-tested foundation.
 ## Architectural Highlights
 
 - **Layered architecture** &mdash; `domain/` contains pure invariants, `ports/` defines trait
-  boundaries, `services/` provides implementations, and `app/` wires commands with `AppContext`.
+  boundaries, `adapters/` provides implementations, and `app/` wires commands with `AppContext`.
 - **I/O abstraction** &mdash; `src/ports/item_store.rs` defines an `ItemStore` trait and
-  `src/services/filesystem_item_store.rs` implements it, rooted at `~/.config/rs-cli-tmpl`.
-- **Configuration management** &mdash; `src/services/storage_settings.rs` provides storage path
+  `src/adapters/filesystem_item_store.rs` implements it, rooted at `~/.config/rs-cli-tmpl`.
+- **Configuration management** &mdash; `src/adapters/storage_settings.rs` provides storage path
   configuration, enabling easy testing with custom paths.
 - **Robust testing strategy** &mdash; unit tests live next to their modules, `src/testing/`
   provides a `MockItemStore` for command logic tests (with `#[cfg(test)]`), and the `tests/`
@@ -90,13 +90,13 @@ rs-cli-tmpl/
 │   │   └── item_id.rs         # ItemId validation
 │   ├── ports/                 # Trait boundaries
 │   │   └── item_store.rs      # ItemStore trait
-│   ├── services/              # Implementations
+│   ├── adapters/              # Implementations
 │   │   ├── filesystem_item_store.rs
 │   │   └── storage_settings.rs
 │   └── testing/               # Test infrastructure (#[cfg(test)])
 │       └── mock_item_store.rsapp/commands/` with your own business logic.
 2. Add domain invariants in `src/domain/` and ports in `src/ports/`.
-3. Implement services in `src/services/` and wire them in `src/lib.rs`.
+3. Implement adapters in `src/adapters/` and wire them in `src/lib.rs`.
 4. Update the CLI definitions in `src/main.rs` to match your command surface.
 5   └── ...
 ```

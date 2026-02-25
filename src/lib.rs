@@ -1,9 +1,9 @@
 //! Library entry point exposing the core command handlers.
 
 pub mod app;
+pub mod adapters;
 pub mod domain;
 pub mod ports;
-pub mod services;
 
 #[cfg(test)]
 pub(crate) mod testing;
@@ -12,7 +12,7 @@ use app::{
     AppContext, Command,
     commands::{AddItem, DeleteItem, ListItems},
 };
-use services::FilesystemItemStore;
+use adapters::FilesystemItemStore;
 
 pub use domain::AppError;
 
