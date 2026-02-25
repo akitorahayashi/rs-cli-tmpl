@@ -1,4 +1,4 @@
-//! Shared testing utilities mirroring the reference project's fixture culture.
+//! Shared testing utilities for rs-cli-tmpl integration tests.
 
 use assert_cmd::Command;
 use std::env;
@@ -24,6 +24,9 @@ impl TestContext {
         fs::create_dir_all(&work_dir).expect("Failed to create test work directory");
 
         let original_home = env::var_os("HOME");
+        // SAFETY: Tests are serialized via #[serial]. No other threads or child processes
+        // concurrently read or modify the process environment during the test. Restoration
+        // is performed deterministically in Drop. env::set_var is unsafe in Rust 2024.
         unsafe {
             env::set_var("HOME", root.path());
         }
@@ -91,21 +94,34 @@ impl TestContext {
     }
 
     /// Execute a closure after temporarily switching into the provided directory.
+    ///
+    /// The original directory is always restored, even if the closure panics.
     pub fn with_dir<F, R, P>(&self, dir: P, action: F) -> R
     where
         F: FnOnce() -> R,
         P: AsRef<Path>,
     {
+        struct DirRestore {
+            original: PathBuf,
+        }
+        impl Drop for DirRestore {
+            fn drop(&mut self) {
+                let _ = env::set_current_dir(&self.original);
+            }
+        }
+
         let original = env::current_dir().expect("Failed to capture current dir");
         env::set_current_dir(dir.as_ref()).expect("Failed to switch current dir");
-        let result = action();
-        env::set_current_dir(original).expect("Failed to restore current dir");
-        result
+        let _guard = DirRestore { original };
+        action()
     }
 }
 
 impl Drop for TestContext {
     fn drop(&mut self) {
+        // SAFETY: Tests are serialized via #[serial]. No other threads or child processes
+        // concurrently read or modify the process environment during the test.
+        // env::set_var/remove_var are unsafe in Rust 2024.
         match &self.original_home {
             Some(value) => unsafe {
                 env::set_var("HOME", value);

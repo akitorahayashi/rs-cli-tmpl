@@ -1,0 +1,7 @@
+mod add_command_persists_item;
+mod add_list_delete_roundtrip_succeeds;
+mod add_with_invalid_id_fails;
+mod delete_command_removes_item;
+mod delete_nonexistent_item_fails;
+mod help_and_version_flags_work;
+mod list_command_outputs_items;
