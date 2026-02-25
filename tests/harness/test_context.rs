@@ -1,4 +1,4 @@
-//! Shared testing utilities mirroring the reference project's fixture culture.
+//! Shared testing utilities for rs-cli-tmpl integration tests.
 
 use assert_cmd::Command;
 use std::env;

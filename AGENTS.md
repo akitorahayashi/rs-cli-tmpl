@@ -30,7 +30,7 @@
 ## Testing Strategy
 - **Unit Tests**: Located within the `src/` directory alongside the code they test, covering domain invariants and service implementations.
 - **Command Logic Tests**: Found in `src/app/commands/`, utilizing `MockItemStore` from `src/testing/` (compiled with `#[cfg(test)]`) to ensure business logic is tested in isolation via the `Command` trait.
-- **Integration Tests**: Housed in the `tests/` directory, these tests cover the public library API and CLI user flows from an external perspective. Separate crates for API (`tests/commands_api.rs`) and CLI workflows (`tests/cli_commands.rs`, `tests/cli_flow.rs`), with shared fixtures in `tests/common/mod.rs`.
+- **Integration Tests**: Housed in the `tests/` directory, organised into two explicit boundaries: `tests/cli.rs` for CLI user flows and `tests/library.rs` for the public library API. Behavior-oriented modules live under `tests/cli/` and `tests/library/`; shared fixtures reside in `tests/harness/test_context.rs`.
 - **CI**: GitHub Actions automatically runs build, linting, and test workflows, as defined in `.github/workflows/`.
 
 ## Architectural Highlights

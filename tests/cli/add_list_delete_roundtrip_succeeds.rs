@@ -1,12 +1,10 @@
-mod common;
-
-use common::TestContext;
+use crate::harness::TestContext;
 use predicates::prelude::*;
 use serial_test::serial;
 
 #[test]
 #[serial]
-fn user_can_add_list_and_delete_items() {
+fn add_list_delete_roundtrip_succeeds() {
     let ctx = TestContext::new();
 
     ctx.cli()

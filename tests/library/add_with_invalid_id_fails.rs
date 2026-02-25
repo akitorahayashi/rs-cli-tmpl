@@ -1,13 +1,11 @@
-mod common;
-
-use common::TestContext;
+use crate::harness::TestContext;
 use rs_cli_tmpl::add;
 use serial_test::serial;
 use std::io;
 
 #[test]
 #[serial]
-fn add_with_invalid_id_surfaces_error() {
+fn add_with_invalid_id_fails() {
     let ctx = TestContext::new();
 
     ctx.with_dir(ctx.work_dir(), || {
