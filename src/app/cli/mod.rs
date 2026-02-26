@@ -21,15 +21,15 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    #[clap(visible_alias = "a")]
+    #[command(about = "Add a new item", visible_alias = "a")]
     Add {
         id: String,
-        #[clap(short, long)]
+        #[arg(short, long)]
         content: String,
     },
-    #[clap(visible_alias = "ls")]
+    #[command(about = "List all items", visible_alias = "ls")]
     List,
-    #[clap(visible_alias = "rm")]
+    #[command(about = "Delete an item", visible_alias = "rm")]
     Delete { id: String },
 }
 
