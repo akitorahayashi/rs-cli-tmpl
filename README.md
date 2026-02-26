@@ -8,7 +8,8 @@ well-tested foundation.
 ## Architectural Highlights
 
 - Layered architecture: `domain/` contains pure invariants, `ports/` defines trait
-  boundaries, `adapters/` provides implementations, and `app/` wires commands with `AppContext`.
+  boundaries, `adapters/` provides implementations, and `app/` separates API orchestration,
+  CLI adaptation, and command execution with `AppContext`.
 - I/O abstraction: `src/ports/item_store.rs` defines an `ItemStore` trait and
   `src/adapters/filesystem_item_store.rs` implements it, rooted at `~/.config/rs-cli-tmpl`.
 - Configuration management: `src/adapters/storage_settings.rs` provides storage path
@@ -77,15 +78,20 @@ rs-cli-tmpl delete <id>  # Delete an item
 ```text
 rs-cli-tmpl/
 ├── src/
-│   ├── main.rs                # CLI parsing (clap)
-│   ├── lib.rs                 # Public API + default_context() helper
+│   ├── main.rs                # Binary entrypoint delegating to library CLI
+│   ├── lib.rs                 # Public API + CLI entrypoint re-exports
 │   ├── app/                   # Application layer
-│   │   ├── command.rs         # Command trait
+│   │   ├── api.rs             # Library-facing use-case orchestration
 │   │   ├── context.rs         # AppContext
-│   │   └── commands/          # Command implementations
-│   │       ├── add_item.rs
-│   │       ├── list_items.rs
-│   │       └── delete_item.rs
+│   │   ├── cli/               # CLI adapter (clap + output formatting)
+│   │   │   ├── mod.rs
+│   │   │   ├── add.rs
+│   │   │   ├── list.rs
+│   │   │   └── delete.rs
+│   │   └── commands/          # Use-case command execution modules
+│   │       ├── add/mod.rs
+│   │       ├── list/mod.rs
+│   │       └── delete/mod.rs
 │   ├── domain/                # Pure business invariants
 │   │   ├── error.rs           # AppError definitions
 │   │   └── item_id.rs         # ItemId validation
@@ -109,9 +115,9 @@ rs-cli-tmpl/
 
 ## Adapting the Template
 
-1. Replace the sample commands in `src/app/commands/` with your own business logic.
-2. Extend `src/lib.rs` to wire new dependencies and expose public APIs.
-3. Update the CLI definitions in `src/main.rs` to match your command surface.
+1. Replace the sample commands in `src/app/commands/<command>/` with your own business logic.
+2. Extend `src/app/api.rs` to compose dependencies and expose use-case APIs.
+3. Update the CLI definitions in `src/app/cli/` to match your command surface.
 4. Refresh the integration tests and documentation to describe the new behavior.
 
 Happy hacking!
