@@ -37,14 +37,15 @@ This document describes the current boundary contracts across `src/` and
 - Orchestrates use cases by combining domain rules with port-backed dependencies.
 - Encodes command-level behavior without direct external I/O implementation.
 - Current modules:
+  - `api.rs`
+  - `cli/*`
   - `context.rs`
-  - `command.rs`
-  - `commands/*`
+  - `commands/<command>/mod.rs`
 
 ### `src/lib.rs` and `src/main.rs`
 
-- `lib.rs` exposes the public API and composes default dependencies.
-- `main.rs` is the CLI entrypoint and translates CLI input into library calls.
+- `lib.rs` re-exports the public API surface and CLI entrypoint.
+- `main.rs` delegates to the library CLI entrypoint.
 
 ## Dependency Direction
 
@@ -82,11 +83,12 @@ Dependencies flow inward toward stable business rules:
 ## Placement Guide
 
 - New business invariants and validation logic: `src/domain`.
-- New use-case orchestration: `src/app/commands`.
+- New use-case orchestration: `src/app/commands/<command>/mod.rs`.
+- New library-facing orchestration entry points: `src/app/api.rs`.
 - New dependency contracts: `src/ports`.
 - New I/O implementations or env/path resolution: `src/adapters`.
-- New CLI argument surfaces: `src/main.rs`.
-- New reusable library entry points: `src/lib.rs`.
+- New CLI argument surfaces and output shaping: `src/app/cli/`.
+- New reusable library entry points: `src/app/api.rs` and `src/lib.rs` re-exports.
 
 ## Test Boundary Model
 

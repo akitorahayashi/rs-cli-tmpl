@@ -1,18 +1,11 @@
-use crate::app::{AppContext, Command};
+use crate::app::AppContext;
 use crate::domain::{AppError, ItemId};
 use crate::ports::ItemStore;
 
-/// Command to add an item to storage.
-pub struct AddItem<'a> {
-    pub id: &'a str,
-    pub content: &'a str,
-}
-
-impl Command<()> for AddItem<'_> {
-    fn execute(&self, ctx: &AppContext<impl ItemStore>) -> Result<(), AppError> {
-        let id = ItemId::new(self.id)?;
-        ctx.store().add_item(&id, self.content)
-    }
+/// Add an item to storage.
+pub fn execute(ctx: &AppContext<impl ItemStore>, id: &str, content: &str) -> Result<(), AppError> {
+    let id = ItemId::new(id)?;
+    ctx.store().add_item(&id, content)
 }
 
 #[cfg(test)]
@@ -24,9 +17,8 @@ mod tests {
     fn add_item_forwards_to_store() {
         let store = MockItemStore::default();
         let ctx = AppContext::new(store);
-        let command = AddItem { id: "demo", content: "example" };
 
-        command.execute(&ctx).expect("execution should succeed");
+        execute(&ctx, "demo", "example").expect("execution should succeed");
 
         let calls = ctx.store().add_calls.borrow();
         assert_eq!(calls.len(), 1);
@@ -37,9 +29,8 @@ mod tests {
     fn add_item_rejects_invalid_id() {
         let store = MockItemStore::default();
         let ctx = AppContext::new(store);
-        let command = AddItem { id: "invalid/id", content: "example" };
 
-        let result = command.execute(&ctx);
+        let result = execute(&ctx, "invalid/id", "example");
         assert!(result.is_err());
     }
 }
