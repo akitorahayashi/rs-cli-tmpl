@@ -21,7 +21,7 @@ This document describes the current boundary contracts across `src/` and
 
 ### `src/adapters`
 
-- Implements `ports` using concrete external mechanisms.
+- Implements `domain::ports` traits using concrete external mechanisms.
 - Owns filesystem access and environment-based configuration resolution.
 - Current modules:
   - `filesystem_item_store.rs`
@@ -79,11 +79,10 @@ Dependencies flow inward toward stable business rules:
 
 - `src/domain` houses business invariants and validation logic.
 - `src/app/commands/<command>/mod.rs` contains use-case orchestration.
-- `src/app/api.rs` defines library-facing orchestration entry points.
 - `src/domain/ports` holds dependency contracts.
 - `src/adapters` manages I/O implementations and env/path resolution.
 - `src/app/cli/` structures CLI argument surfaces and output shaping.
-- `src/app/api.rs` and `src/lib.rs` provide reusable library entry points.
+- `src/app/api.rs` and `src/lib.rs` define library-facing orchestration and public entry points.
 
 ## Test Boundary Model
 
