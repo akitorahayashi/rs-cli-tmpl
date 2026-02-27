@@ -77,13 +77,13 @@ Dependencies flow inward toward stable business rules:
 
 ## Placement Guide
 
-- New business invariants and validation logic: `src/domain`.
-- New use-case orchestration: `src/app/commands/<command>/mod.rs`.
-- New library-facing orchestration entry points: `src/app/api.rs`.
-- New dependency contracts: `src/domain/ports`.
-- New I/O implementations or env/path resolution: `src/adapters`.
-- New CLI argument surfaces and output shaping: `src/app/cli/`.
-- New reusable library entry points: `src/app/api.rs` and `src/lib.rs` re-exports.
+- `src/domain` houses business invariants and validation logic.
+- `src/app/commands/<command>/mod.rs` contains use-case orchestration.
+- `src/app/api.rs` defines library-facing orchestration entry points.
+- `src/domain/ports` holds dependency contracts.
+- `src/adapters` manages I/O implementations and env/path resolution.
+- `src/app/cli/` structures CLI argument surfaces and output shaping.
+- `src/app/api.rs` and `src/lib.rs` provide reusable library entry points.
 
 ## Test Boundary Model
 
