@@ -1,4 +1,4 @@
-use crate::ports::ItemStore;
+use crate::domain::ports::ItemStore;
 
 /// Application context holding dependencies for command execution.
 pub struct AppContext<S: ItemStore> {

@@ -12,21 +12,16 @@ This document describes the current boundary contracts across `src/` and
 
 ### `src/domain`
 
-- Owns pure business invariants and domain error semantics.
+- Owns pure business invariants, domain error semantics, and port contracts.
 - Contains no filesystem, environment, process, or network access.
 - Current modules:
   - `item_id.rs`
   - `error.rs`
-
-### `src/ports`
-
-- Defines boundary interfaces consumed by the application layer.
-- Current module:
-  - `item_store.rs` (`ItemStore` trait)
+  - `ports/item_store.rs` (`ItemStore` trait)
 
 ### `src/adapters`
 
-- Implements `ports` using concrete external mechanisms.
+- Implements `domain::ports` traits using concrete external mechanisms.
 - Owns filesystem access and environment-based configuration resolution.
 - Current modules:
   - `filesystem_item_store.rs`
@@ -51,12 +46,12 @@ This document describes the current boundary contracts across `src/` and
 
 Dependencies flow inward toward stable business rules:
 
-`main` -> `lib` -> `app` -> `ports` -> `domain`
+`main` -> `lib` -> `app` -> `domain::ports` -> `domain`
 `app` -> `domain`
-`adapters` -> `ports` + `domain`
+`adapters` -> `domain::ports` + `domain`
 `lib` -> `adapters` for default wiring
 
-`domain` does not depend on `app`, `ports`, `adapters`, or CLI parsing.
+`domain` does not depend on `app`, `adapters`, or CLI parsing.
 
 ## Boundary Rules
 
@@ -82,13 +77,12 @@ Dependencies flow inward toward stable business rules:
 
 ## Placement Guide
 
-- New business invariants and validation logic: `src/domain`.
-- New use-case orchestration: `src/app/commands/<command>/mod.rs`.
-- New library-facing orchestration entry points: `src/app/api.rs`.
-- New dependency contracts: `src/ports`.
-- New I/O implementations or env/path resolution: `src/adapters`.
-- New CLI argument surfaces and output shaping: `src/app/cli/`.
-- New reusable library entry points: `src/app/api.rs` and `src/lib.rs` re-exports.
+- `src/domain` houses business invariants and validation logic.
+- `src/app/commands/<command>/mod.rs` contains use-case orchestration.
+- `src/domain/ports` holds dependency contracts.
+- `src/adapters` manages I/O implementations and env/path resolution.
+- `src/app/cli/` structures CLI argument surfaces and output shaping.
+- `src/app/api.rs` and `src/lib.rs` define library-facing orchestration and public entry points.
 
 ## Test Boundary Model
 

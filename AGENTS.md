@@ -34,7 +34,7 @@
 - **CI**: GitHub Actions automatically runs build, linting, and test workflows, as defined in `.github/workflows/`.
 
 ## Architectural Highlights
-- **Layered architecture**: `domain/` contains pure invariants (no I/O), `ports/` defines trait boundaries, `adapters/` provides implementations, and `app/` wires commands with `AppContext`.
-- **I/O abstraction**: `src/ports/item_store.rs` defines an `ItemStore` trait and `src/adapters/filesystem_item_store.rs` implements it, rooted at `~/.config/rs-cli-tmpl`.
+- **Layered architecture**: `domain/` contains pure invariants and port contracts (`domain/ports/`), `adapters/` provides implementations, and `app/` wires commands with `AppContext`.
+- **I/O abstraction**: `src/domain/ports/item_store.rs` defines an `ItemStore` trait and `src/adapters/filesystem_item_store.rs` implements it, rooted at `~/.config/rs-cli-tmpl`.
 - **Configuration management**: `src/adapters/storage_settings.rs` provides storage path configuration, enabling custom paths for testing.
 - **Storage Layout**: Items are stored under `~/.config/rs-cli-tmpl/<id>/item.txt`.
