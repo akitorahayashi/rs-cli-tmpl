@@ -1,6 +1,6 @@
 use crate::app::AppContext;
+use crate::domain::ports::ItemStore;
 use crate::domain::{AppError, ItemId};
-use crate::ports::ItemStore;
 
 /// Delete an item from storage.
 pub fn execute(ctx: &AppContext<impl ItemStore>, id: &str) -> Result<(), AppError> {

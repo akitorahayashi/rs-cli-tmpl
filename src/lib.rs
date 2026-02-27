@@ -3,7 +3,6 @@
 pub mod adapters;
 pub(crate) mod app;
 pub mod domain;
-pub mod ports;
 
 #[cfg(test)]
 pub(crate) mod testing;

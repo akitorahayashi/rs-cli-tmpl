@@ -12,17 +12,12 @@ This document describes the current boundary contracts across `src/` and
 
 ### `src/domain`
 
-- Owns pure business invariants and domain error semantics.
+- Owns pure business invariants, domain error semantics, and port contracts.
 - Contains no filesystem, environment, process, or network access.
 - Current modules:
   - `item_id.rs`
   - `error.rs`
-
-### `src/ports`
-
-- Defines boundary interfaces consumed by the application layer.
-- Current module:
-  - `item_store.rs` (`ItemStore` trait)
+  - `ports/item_store.rs` (`ItemStore` trait)
 
 ### `src/adapters`
 
@@ -51,12 +46,12 @@ This document describes the current boundary contracts across `src/` and
 
 Dependencies flow inward toward stable business rules:
 
-`main` -> `lib` -> `app` -> `ports` -> `domain`
+`main` -> `lib` -> `app` -> `domain::ports` -> `domain`
 `app` -> `domain`
-`adapters` -> `ports` + `domain`
+`adapters` -> `domain::ports` + `domain`
 `lib` -> `adapters` for default wiring
 
-`domain` does not depend on `app`, `ports`, `adapters`, or CLI parsing.
+`domain` does not depend on `app`, `adapters`, or CLI parsing.
 
 ## Boundary Rules
 
@@ -85,7 +80,7 @@ Dependencies flow inward toward stable business rules:
 - New business invariants and validation logic: `src/domain`.
 - New use-case orchestration: `src/app/commands/<command>/mod.rs`.
 - New library-facing orchestration entry points: `src/app/api.rs`.
-- New dependency contracts: `src/ports`.
+- New dependency contracts: `src/domain/ports`.
 - New I/O implementations or env/path resolution: `src/adapters`.
 - New CLI argument surfaces and output shaping: `src/app/cli/`.
 - New reusable library entry points: `src/app/api.rs` and `src/lib.rs` re-exports.

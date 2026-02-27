@@ -1,6 +1,6 @@
 use crate::app::AppContext;
 use crate::domain::AppError;
-use crate::ports::ItemStore;
+use crate::domain::ports::ItemStore;
 
 /// List all item identifiers from storage.
 pub fn execute(ctx: &AppContext<impl ItemStore>) -> Result<Vec<String>, AppError> {
