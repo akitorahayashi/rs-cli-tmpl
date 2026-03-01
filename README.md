@@ -59,7 +59,7 @@ rs-cli-tmpl delete <id>  # Delete an item
 - `cargo fmt`: format code using rustfmt.
 - `cargo fmt --check && cargo clippy --all-targets --all-features -- -D warnings`: format check and lint with clippy.
 - `cargo test --all-targets --all-features`: run all tests.
-- `just setup && mise exec -- cargo tarpaulin --out Xml --output-dir coverage --all-features --fail-under 30`: run coverage with pinned tarpaulin.
+- `just coverage`: run coverage with pinned tarpaulin.
 - `cargo fetch --locked`: pre-fetch dependencies.
 
 ## Testing Culture
