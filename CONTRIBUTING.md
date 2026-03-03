@@ -34,10 +34,9 @@
 
 ### Verify Commands
 
-All three commands are run before submitting changes:
+All commands are run before submitting changes:
 
 ```bash
-cargo fmt --check
-cargo clippy --all-targets --all-features -- -D warnings
-cargo test --all-targets --all-features
+just check
+just test
 ```
