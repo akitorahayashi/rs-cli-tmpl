@@ -51,15 +51,6 @@ rs-cli-tmpl list         # List items
 rs-cli-tmpl delete <id>  # Delete an item
 ```
 
-## Release Signing and Verification
-
-The release workflow publishes these artifacts for every platform binary:
-
-- `*.sig`: Sigstore keyless signature
-- `*.bundle`: Sigstore verification bundle
-
-Consumers can choose whether to enforce signature verification with their preferred Sigstore/cosign policy.
-
 ## Development Commands
 
 - `just setup`: install pinned development tools from `mise.toml`.
