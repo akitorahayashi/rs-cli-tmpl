@@ -51,6 +51,23 @@ rs-cli-tmpl list         # List items
 rs-cli-tmpl delete <id>  # Delete an item
 ```
 
+## Release Provenance and Verification
+
+The release workflow publishes these artifacts for every platform binary:
+
+- `*.sig`: Sigstore keyless signature
+- `*.bundle`: Sigstore verification bundle
+- GitHub build provenance attestation (SLSA)
+
+Consumers can choose whether to enforce verification, but release metadata is always published so
+the choice is available.
+
+Example verification for a downloaded binary:
+
+```bash
+gh release verify-asset v1.2.3 ./rs-cli-tmpl-linux-x86_64 --repo <owner>/<repo>
+```
+
 ## Development Commands
 
 - `just setup`: install pinned development tools from `mise.toml`.
