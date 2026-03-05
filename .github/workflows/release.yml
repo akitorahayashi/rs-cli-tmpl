@@ -10,26 +10,35 @@ on:
       - 'v*'
 
 permissions:
-  contents: write
-  id-token: write
-  attestations: write
+  contents: read
 
 jobs:
   lint:
+    permissions:
+      contents: read
     uses: ./.github/workflows/run-linters.yml
 
   test:
+    permissions:
+      contents: read
     uses: ./.github/workflows/run-tests.yml
 
   coverage:
+    permissions:
+      contents: read
     uses: ./.github/workflows/collect-coverage.yml
 
   build:
+    permissions:
+      contents: read
     uses: ./.github/workflows/build.yml
 
   release:
     needs: [lint, test, coverage, build]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -56,15 +65,6 @@ jobs:
             echo "Signing ${artifact}..."
             cosign sign-blob --yes --bundle "${artifact}.bundle" "${artifact}" > "${artifact}.sig"
           done
-
-      - name: Attest release binaries
-        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
-        with:
-          subject-path: |
-            rs-cli-tmpl-linux-x86_64
-            rs-cli-tmpl-linux-aarch64
-            rs-cli-tmpl-darwin-x86_64
-            rs-cli-tmpl-darwin-aarch64
 
       - name: Create release
         uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b
