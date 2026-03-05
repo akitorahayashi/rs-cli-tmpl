@@ -65,7 +65,7 @@ the choice is available.
 Example verification for a downloaded binary:
 
 ```bash
-gh release verify-asset v1.2.3 ./rs-cli-tmpl-linux-x86_64 --repo <owner>/<repo>
+gh release verify-asset <tag> <asset-path> --repo <owner>/<repo>
 ```
 
 ## Development Commands
