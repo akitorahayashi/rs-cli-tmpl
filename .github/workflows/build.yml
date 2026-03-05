@@ -18,7 +18,7 @@ jobs:
           rust-version: 1.90.0
 
       - name: Build debug binary
-        run: cargo build
+        run: just build
 
   build-release:
     name: Build release binary

@@ -44,6 +44,9 @@ runs:
         restore-keys: |
           ${{ runner.os }}-cargo-
 
+    - name: Setup just
+      uses: extractions/setup-just@v2
+
     - name: Setup mise
       if: inputs.install-mise == 'true'
       uses: jdx/mise-action@v3
