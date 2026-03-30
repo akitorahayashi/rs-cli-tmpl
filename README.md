@@ -119,5 +119,3 @@ rs-cli-tmpl/
 2. Extend `src/app/api.rs` to compose dependencies and expose use-case APIs.
 3. Update the CLI definitions in `src/app/cli/` to match your command surface.
 4. Refresh the integration tests and documentation to describe the new behavior.
-
-Happy hacking!

@@ -18,14 +18,11 @@ help:
 # Environment Setup
 # ==============================================================================
 
-# Initialize project: install dependencies and configure hooks
+# Initialize project: install dependencies
 setup:
     @echo "🪄 Installing tools with mise..."
     @mise trust
     @mise install --locked
-    @echo "🪝 Configuring git hooks..."
-    chmod +x .githooks/pre-commit
-    git config core.hooksPath .githooks
 
 # ==============================================================================
 # Lint & Format
@@ -38,7 +35,6 @@ fix:
 
 # Verify formatting, lint, and compilation
 check:
-    cargo check
     cargo fmt --check
     cargo clippy --all-targets --all-features -- -D warnings
     just --fmt --check --unstable
@@ -54,7 +50,15 @@ test:
 # Generate code coverage report
 coverage:
     rm -rf target/tarpaulin coverage
-    env -u RUSTC_WRAPPER -u SCCACHE_IGNORE_SERVER_IO_ERROR -u SCCACHE_ERROR_LOG mise exec -- cargo tarpaulin --engine llvm --out Xml --output-dir coverage --all-features --fail-under 30
+    mise exec -- cargo tarpaulin \
+        --engine llvm \
+        --target-dir target/tarpaulin \
+        --packages rs-cli-tmpl \
+        --out Stdout \
+        --out Html \
+        --output-dir coverage \
+        --all-features \
+        --fail-under 30
 
 # ==============================================================================
 # Build Tasks

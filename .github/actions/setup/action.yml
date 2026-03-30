@@ -44,13 +44,15 @@ runs:
         restore-keys: |
           ${{ runner.os }}-cargo-
 
-    - name: Setup just
-      uses: extractions/setup-just@v2
+    - name: Setup mise with locked project tools
+      if: inputs.install-mise == 'true' && inputs.mise-tools == ''
+      uses: jdx/mise-action@v3
       with:
-        just-version: 1.46.0
+        version: ${{ inputs.mise-version }}
+        install_args: --locked
 
-    - name: Setup mise
-      if: inputs.install-mise == 'true'
+    - name: Setup mise with requested tools
+      if: inputs.install-mise == 'true' && inputs.mise-tools != ''
       uses: jdx/mise-action@v3
       with:
         version: ${{ inputs.mise-version }}

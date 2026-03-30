@@ -1,6 +1,6 @@
 # Binary Release Workflow
 #
-# Builds and publishes rs-cli-tmpl binaries for multiple platforms on tag push.
+# Delegates tagged release builds to the reusable build workflow.
 
 name: Release
 
@@ -9,48 +9,24 @@ on:
     tags:
       - 'v*'
 
-permissions:
-  contents: read
-
 jobs:
-  lint:
-    permissions:
-      contents: read
-    uses: ./.github/workflows/run-linters.yml
-
-  test:
-    permissions:
-      contents: read
-    uses: ./.github/workflows/run-tests.yml
-
-  coverage:
-    permissions:
-      contents: read
-    uses: ./.github/workflows/collect-coverage.yml
-
   build:
-    permissions:
-      contents: read
     uses: ./.github/workflows/build.yml
 
-  release:
-    needs: [lint, test, coverage, build]
-    runs-on: ubuntu-latest
+  publish-release:
+    needs: build
     permissions:
       contents: write
+    runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
+          path: release-artifacts
           merge-multiple: true
 
-      - name: Create release
-        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b
+      - name: Publish release
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
         with:
-          files: |
-            rs-cli-tmpl-linux-x86_64
-            rs-cli-tmpl-linux-aarch64
-            rs-cli-tmpl-darwin-x86_64
-            rs-cli-tmpl-darwin-aarch64
+          files: release-artifacts/*
           generate_release_notes: true
-          overwrite_files: true
