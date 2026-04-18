@@ -4,14 +4,12 @@ use serial_test::serial;
 
 #[test]
 #[serial]
-fn delete_nonexistent_item_fails() {
+fn label_with_invalid_name_fails() {
     let ctx = TestContext::new();
 
     ctx.cli()
-        .arg("item")
-        .arg("delete")
-        .arg("nonexistent")
+        .args(["label", "add", "invalid/name"])
         .assert()
         .failure()
-        .stderr(predicate::str::contains("Item 'nonexistent' was not found"));
+        .stderr(predicate::str::contains("invalid label name"));
 }

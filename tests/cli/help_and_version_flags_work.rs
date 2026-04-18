@@ -21,8 +21,8 @@ fn help_lists_visible_aliases() {
 
     // Keep in sync with aliases defined in the CLI builder.
     ctx.cli().arg("--help").assert().success().stdout(
-        predicate::str::contains("[aliases: a]")
-            .and(predicate::str::contains("[aliases: ls]"))
-            .and(predicate::str::contains("[aliases: rm]")),
+        predicate::str::contains("[aliases: i]")
+            .and(predicate::str::contains("[aliases: l]"))
+            .and(predicate::str::contains("[aliases: ln]")),
     );
 }

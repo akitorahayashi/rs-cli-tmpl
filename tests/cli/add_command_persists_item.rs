@@ -8,6 +8,7 @@ fn add_command_persists_item() {
     let ctx = TestContext::new();
 
     ctx.cli()
+        .arg("item")
         .arg("add")
         .arg("demo")
         .arg("--content")

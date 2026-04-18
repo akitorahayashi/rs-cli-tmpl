@@ -7,11 +7,12 @@ use serial_test::serial;
 fn delete_command_removes_item() {
     let ctx = TestContext::new();
 
-    ctx.cli().args(["add", "temp", "--content", "value"]).assert().success();
+    ctx.cli().args(["item", "add", "temp", "--content", "value"]).assert().success();
 
     assert!(ctx.saved_item_path("temp").exists(), "Item should exist before delete");
 
     ctx.cli()
+        .arg("item")
         .arg("delete")
         .arg("temp")
         .assert()

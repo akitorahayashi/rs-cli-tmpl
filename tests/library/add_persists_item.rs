@@ -1,5 +1,5 @@
 use crate::harness::TestContext;
-use rs_cli_tmpl::add;
+use rs_cli_tmpl::item_add;
 use serial_test::serial;
 
 #[test]
@@ -8,7 +8,7 @@ fn add_persists_item() {
     let ctx = TestContext::new();
 
     ctx.with_dir(ctx.work_dir(), || {
-        add("sample", "hello world").expect("library add should succeed");
+        item_add("sample", "hello world").expect("library add should succeed");
     });
 
     ctx.assert_saved_item_contains("sample", "hello world");

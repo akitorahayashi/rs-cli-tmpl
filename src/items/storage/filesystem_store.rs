@@ -91,7 +91,7 @@ mod tests {
         }
 
         fn storage_root(&self) -> PathBuf {
-            self.root.path().join(".config").join("rs-cli-tmpl")
+            self.root.path().join(".config").join("rs-cli-tmpl").join("items")
         }
     }
 
