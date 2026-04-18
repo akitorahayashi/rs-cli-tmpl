@@ -60,6 +60,10 @@ impl ItemStore for FilesystemItemStore {
         Ok(ids)
     }
 
+    fn item_exists(&self, id: &ItemId) -> Result<bool, AppError> {
+        Ok(self.item_dir(id).exists())
+    }
+
     fn delete_item(&self, id: &ItemId) -> Result<(), AppError> {
         let directory = self.item_dir(id);
         if !directory.exists() {
@@ -91,7 +95,7 @@ mod tests {
         }
 
         fn storage_root(&self) -> PathBuf {
-            self.root.path().join(".config").join("rs-cli-tmpl")
+            self.root.path().join(".config").join("rs-cli-tmpl").join("items")
         }
     }
 

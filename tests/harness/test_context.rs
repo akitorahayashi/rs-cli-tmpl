@@ -78,7 +78,29 @@ impl TestContext {
 
     /// Return the path where the CLI stores a saved item file for the provided identifier.
     pub fn saved_item_path(&self, id: &str) -> PathBuf {
-        self.home().join(".config").join("rs-cli-tmpl").join(id).join("item.txt")
+        self.home().join(".config").join("rs-cli-tmpl").join("items").join(id).join("item.txt")
+    }
+
+    /// Return the path where the CLI stores a saved label file for the provided label name.
+    pub fn saved_label_path(&self, name: &str) -> PathBuf {
+        self.home()
+            .join(".config")
+            .join("rs-cli-tmpl")
+            .join("labels")
+            .join("definitions")
+            .join(name)
+            .join("label.txt")
+    }
+
+    /// Return the path used to represent one item-label link.
+    pub fn label_link_path(&self, item_id: &str, label_name: &str) -> PathBuf {
+        self.home()
+            .join(".config")
+            .join("rs-cli-tmpl")
+            .join("labels")
+            .join("links")
+            .join(item_id)
+            .join(label_name)
     }
 
     /// Assert that a saved item contains the provided value snippet.
@@ -91,6 +113,24 @@ impl TestContext {
             "Saved item for id `{id}` did not contain `{expected}`; content: {content}",
             expected = expected_snippet
         );
+    }
+
+    /// Assert that a saved label exists.
+    pub fn assert_saved_label_exists(&self, name: &str) {
+        let label_path = self.saved_label_path(name);
+        assert!(label_path.exists(), "Expected saved label at {}", label_path.display());
+    }
+
+    /// Assert that an item-label link exists.
+    pub fn assert_label_link_exists(&self, item_id: &str, label_name: &str) {
+        let link_path = self.label_link_path(item_id, label_name);
+        assert!(link_path.exists(), "Expected label link at {}", link_path.display());
+    }
+
+    /// Assert that an item-label link is removed.
+    pub fn assert_label_link_missing(&self, item_id: &str, label_name: &str) {
+        let link_path = self.label_link_path(item_id, label_name);
+        assert!(!link_path.exists(), "Expected no label link at {}", link_path.display());
     }
 
     /// Execute a closure after temporarily switching into the provided directory.

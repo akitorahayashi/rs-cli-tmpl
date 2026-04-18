@@ -14,9 +14,21 @@ pub enum AppError {
     #[error("Item '{0}' was not found")]
     ItemNotFound(String),
 
+    /// Raised when a requested label cannot be located in storage.
+    #[error("Label '{0}' was not found")]
+    LabelNotFound(String),
+
     /// Raised when an item identifier fails validation.
     #[error("invalid item identifier: {0}")]
     InvalidItemId(String),
+
+    /// Raised when a label name fails validation.
+    #[error("invalid label name: {0}")]
+    InvalidLabelName(String),
+
+    /// Raised when detaching a label that is not attached to an item.
+    #[error("Label '{label_name}' is not attached to item '{item_id}'")]
+    LabelingNotFound { item_id: String, label_name: String },
 }
 
 impl AppError {
@@ -28,8 +40,12 @@ impl AppError {
     pub fn kind(&self) -> io::ErrorKind {
         match self {
             AppError::Io(err) => err.kind(),
-            AppError::ConfigError(_) | AppError::InvalidItemId(_) => io::ErrorKind::InvalidInput,
-            AppError::ItemNotFound(_) => io::ErrorKind::NotFound,
+            AppError::ConfigError(_)
+            | AppError::InvalidItemId(_)
+            | AppError::InvalidLabelName(_) => io::ErrorKind::InvalidInput,
+            AppError::ItemNotFound(_)
+            | AppError::LabelNotFound(_)
+            | AppError::LabelingNotFound { .. } => io::ErrorKind::NotFound,
         }
     }
 }
