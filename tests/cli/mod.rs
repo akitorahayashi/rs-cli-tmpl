@@ -1,13 +1,4 @@
-mod add_command_persists_item;
-mod add_list_delete_roundtrip_succeeds;
-mod add_with_invalid_id_fails;
-mod delete_command_removes_item;
-mod delete_nonexistent_item_fails;
-mod help_and_version_flags_work;
-mod label_add_list_delete_roundtrip_succeeds;
-mod label_command_persists_label;
-mod label_with_invalid_name_fails;
-mod labeling_attach_list_find_detach_roundtrip_succeeds;
-mod labeling_attach_requires_existing_item;
-mod labeling_attach_requires_existing_label;
-mod list_command_outputs_items;
+mod help_and_version;
+mod items;
+mod labeling;
+mod labels;
