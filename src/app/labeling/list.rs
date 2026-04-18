@@ -10,7 +10,7 @@ pub fn execute(
 ) -> Result<Vec<String>, AppError> {
     let item_id = ItemId::new(item_id)?;
 
-    super::ensure_item_exists(ctx, item_id.as_str())?;
+    super::ensure_item_exists(ctx, &item_id)?;
 
     ctx.label_store().labels_for_item(item_id.as_str())
 }

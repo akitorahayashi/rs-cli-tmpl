@@ -12,7 +12,7 @@ pub fn execute(
     let item_id = ItemId::new(item_id)?;
     let label_name = LabelName::new(label_name)?;
 
-    super::ensure_item_exists(ctx, item_id.as_str())?;
+    super::ensure_item_exists(ctx, &item_id)?;
     super::ensure_label_exists(ctx, &label_name)?;
 
     ctx.label_store().attach_label(item_id.as_str(), &label_name)

@@ -9,6 +9,11 @@ pub trait LabelStore {
     /// List all stored labels.
     fn list_labels(&self) -> Result<Vec<String>, AppError>;
 
+    /// Return whether one label exists.
+    fn label_exists(&self, name: &LabelName) -> Result<bool, AppError> {
+        Ok(self.list_labels()?.iter().any(|existing| existing == name.as_str()))
+    }
+
     /// Remove a label by name.
     fn delete_label(&self, name: &LabelName) -> Result<(), AppError>;
 

@@ -47,7 +47,7 @@ impl FilesystemLabelStore {
         self.item_links_dir(item_id).join(label_name.as_str())
     }
 
-    fn label_exists(&self, label_name: &LabelName) -> bool {
+    fn label_definition_exists(&self, label_name: &LabelName) -> bool {
         self.label_dir(label_name).exists()
     }
 
@@ -66,6 +66,14 @@ impl FilesystemLabelStore {
 
     fn valid_item_key(item_id: &str) -> bool {
         !item_id.is_empty() && item_id.chars().all(|c| c.is_alphanumeric() || c == '-')
+    }
+
+    fn validate_item_key(item_id: &str) -> Result<(), AppError> {
+        if Self::valid_item_key(item_id) {
+            Ok(())
+        } else {
+            Err(AppError::InvalidItemId(item_id.to_string()))
+        }
     }
 }
 
@@ -96,6 +104,10 @@ impl LabelStore for FilesystemLabelStore {
 
         names.sort();
         Ok(names)
+    }
+
+    fn label_exists(&self, name: &LabelName) -> Result<bool, AppError> {
+        Ok(self.label_definition_exists(name))
     }
 
     fn delete_label(&self, name: &LabelName) -> Result<(), AppError> {
@@ -130,7 +142,9 @@ impl LabelStore for FilesystemLabelStore {
     }
 
     fn attach_label(&self, item_id: &str, label_name: &LabelName) -> Result<(), AppError> {
-        if !self.label_exists(label_name) {
+        Self::validate_item_key(item_id)?;
+
+        if !self.label_definition_exists(label_name) {
             return Err(AppError::LabelNotFound(label_name.as_str().to_string()));
         }
 
@@ -141,6 +155,8 @@ impl LabelStore for FilesystemLabelStore {
     }
 
     fn detach_label(&self, item_id: &str, label_name: &LabelName) -> Result<(), AppError> {
+        Self::validate_item_key(item_id)?;
+
         let link = self.item_label_link(item_id, label_name);
         if !link.exists() {
             return Err(AppError::LabelingNotFound {
@@ -158,6 +174,8 @@ impl LabelStore for FilesystemLabelStore {
     }
 
     fn labels_for_item(&self, item_id: &str) -> Result<Vec<String>, AppError> {
+        Self::validate_item_key(item_id)?;
+
         let item_links = self.item_links_dir(item_id);
         if !item_links.exists() {
             return Ok(Vec::new());
@@ -179,7 +197,7 @@ impl LabelStore for FilesystemLabelStore {
     }
 
     fn items_for_label(&self, label_name: &LabelName) -> Result<Vec<String>, AppError> {
-        if !self.label_exists(label_name) {
+        if !self.label_definition_exists(label_name) {
             return Err(AppError::LabelNotFound(label_name.as_str().to_string()));
         }
 
@@ -214,6 +232,8 @@ impl LabelStore for FilesystemLabelStore {
     }
 
     fn detach_item(&self, item_id: &str) -> Result<(), AppError> {
+        Self::validate_item_key(item_id)?;
+
         let item_links = self.item_links_dir(item_id);
         if item_links.exists() {
             fs::remove_dir_all(item_links)?;
@@ -321,6 +341,17 @@ mod tests {
     }
 
     #[test]
+    fn attach_fails_if_item_id_is_invalid() {
+        let ctx = TestContext::new();
+        let store = ctx.store();
+        let label = LabelName::new("urgent").unwrap();
+        store.add_label(&label).unwrap();
+
+        let result = store.attach_label("invalid/id", &label);
+        assert!(matches!(result, Err(AppError::InvalidItemId(ref s)) if s == "invalid/id"));
+    }
+
+    #[test]
     fn detach_fails_if_link_is_missing() {
         let ctx = TestContext::new();
         let store = ctx.store();
@@ -349,5 +380,23 @@ mod tests {
 
         let labels = store.labels_for_item("item-a").expect("labels_for_item should succeed");
         assert!(labels.is_empty());
+    }
+
+    #[test]
+    fn labels_for_item_fails_if_item_id_is_invalid() {
+        let ctx = TestContext::new();
+        let store = ctx.store();
+
+        let result = store.labels_for_item("invalid/id");
+        assert!(matches!(result, Err(AppError::InvalidItemId(ref s)) if s == "invalid/id"));
+    }
+
+    #[test]
+    fn detach_item_fails_if_item_id_is_invalid() {
+        let ctx = TestContext::new();
+        let store = ctx.store();
+
+        let result = store.detach_item("invalid/id");
+        assert!(matches!(result, Err(AppError::InvalidItemId(ref s)) if s == "invalid/id"));
     }
 }
