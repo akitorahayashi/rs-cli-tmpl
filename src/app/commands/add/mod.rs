@@ -1,5 +1,6 @@
+use crate::AppError;
 use crate::app::AppContext;
-use crate::domain::{AppError, ItemId, ports::ItemStore};
+use crate::items::{ItemId, ItemStore};
 
 /// Add an item to storage.
 pub fn execute(ctx: &AppContext<impl ItemStore>, id: &str, content: &str) -> Result<(), AppError> {
@@ -10,7 +11,7 @@ pub fn execute(ctx: &AppContext<impl ItemStore>, id: &str, content: &str) -> Res
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::testing::MockItemStore;
+    use crate::items::MockItemStore;
 
     #[test]
     fn add_item_forwards_to_store() {

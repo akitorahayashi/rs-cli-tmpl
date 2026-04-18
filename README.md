@@ -1,26 +1,28 @@
 # rs-cli-tmpl
 
-`rs-cli-tmpl` is a reference template for building Rust-based command line tools with a clean,
-layered architecture. It demonstrates how to separate concerns across the CLI interface,
-application commands, pure business logic, and I/O abstractions so new projects can start from a
-well-tested foundation.
+`rs-cli-tmpl` is a reference template for building Rust command line tools with
+concept-owned module boundaries. It demonstrates how to keep orchestration in
+`app/` while keeping concept rules, contracts, and concrete implementations
+together under a single owning concept module.
 
 ## Architectural Highlights
 
-- Layered architecture: `domain/` contains pure invariants, `ports/` defines trait
-  boundaries, `adapters/` provides implementations, and `app/` separates API orchestration,
-  CLI adaptation, and command execution with `AppContext`.
-- I/O abstraction: `src/ports/item_store.rs` defines an `ItemStore` trait and
-  `src/adapters/filesystem_item_store.rs` implements it, rooted at `~/.config/rs-cli-tmpl`.
-- Configuration management: `src/adapters/storage_settings.rs` provides storage path
-  configuration, enabling easy testing with custom paths.
-- Robust testing strategy: unit tests live next to their modules, `src/testing/`
-  provides a `MockItemStore` for command logic tests (with `#[cfg(test)]`), and the `tests/`
-  directory provides integration suites for both the library API and the CLI binary.
+- Concept ownership at the top level: `items/` owns the sample concept, while
+  `app/` owns command orchestration and interface wiring.
+- Internal boundaries inside the concept: `src/items/store.rs` defines the
+  `ItemStore` contract and `src/items/storage/filesystem_store.rs` provides the
+  filesystem implementation rooted at `~/.config/rs-cli-tmpl`.
+- Concept-local configuration: `src/items/storage/settings.rs` resolves storage
+  settings used by the item store.
+- Stable application-wide error at root: `src/error.rs` defines `AppError`.
+- Robust testing strategy: unit tests live next to their modules,
+  `src/items/testing.rs` provides `MockItemStore` for command tests (compiled
+  with `#[cfg(test)]`), and the `tests/` directory provides integration suites
+  for both the library API and the CLI binary.
 
-The template ships with minimal sample commands (`add`, `list`, and `delete`) that show how to
-thread dependencies through each layer. Replace or extend them with your own domain logic while
-reusing the same structure.
+The template ships with minimal sample commands (`add`, `list`, and `delete`)
+that show dependency flow across these boundaries. Replace or extend the sample
+concept while keeping the same ownership model.
 
 ## Storage Layout
 
@@ -65,9 +67,9 @@ rs-cli-tmpl delete <id>  # Delete an item
 ## Testing Culture
 
 - Unit Tests: Live alongside their modules inside `src/`, covering helper utilities and
-  domain invariants.
-- Command Logic Tests: Use the mock store in `src/testing/mock_item_store.rs` (conditionally
-  compiled with `#[cfg(test)]`) to exercise command implementations without touching the filesystem.
+  concept invariants.
+- Command Logic Tests: Use the mock store in `src/items/testing.rs` (conditionally compiled
+  with `#[cfg(test)]`) to exercise command implementations without touching the filesystem.
 - Integration Tests: Located in the `tests/` directory with explicit executable boundaries:
   `tests/cli.rs` for CLI flows and `tests/library.rs` for public API behavior. Behavior-oriented
   modules live under `tests/cli/` and `tests/library/`; shared fixtures live in
@@ -80,6 +82,7 @@ rs-cli-tmpl/
 ├── src/
 │   ├── main.rs                # Binary entrypoint delegating to library CLI
 │   ├── lib.rs                 # Public API + CLI entrypoint re-exports
+│   ├── error.rs               # Application-wide AppError type
 │   ├── app/                   # Application layer
 │   │   ├── api.rs             # Library-facing use-case orchestration
 │   │   ├── context.rs         # AppContext
@@ -92,16 +95,14 @@ rs-cli-tmpl/
 │   │       ├── add/mod.rs
 │   │       ├── list/mod.rs
 │   │       └── delete/mod.rs
-│   ├── domain/                # Pure business invariants
-│   │   ├── error.rs           # AppError definitions
-│   │   └── item_id.rs         # ItemId validation
-│   ├── ports/                 # Trait boundaries
-│   │   └── item_store.rs      # ItemStore trait
-│   ├── adapters/              # I/O implementations
-│   │   ├── filesystem_item_store.rs
-│   │   └── storage_settings.rs
-│   └── testing/               # Test infrastructure (#[cfg(test)])
-│       └── mock_item_store.rs
+│   └── items/                 # Sample concept owner
+│       ├── mod.rs
+│       ├── item_id.rs         # ItemId validation
+│       ├── store.rs           # ItemStore contract
+│       ├── testing.rs         # MockItemStore for unit tests
+│       └── storage/
+│           ├── filesystem_store.rs
+│           └── settings.rs
 ├── tests/
 │   ├── cli.rs                 # Integration test target: CLI boundary
 │   ├── library.rs             # Integration test target: public API boundary
@@ -109,8 +110,7 @@ rs-cli-tmpl/
 │   ├── library/               # Library behavior specs
 │   └── harness/               # Shared integration fixtures
 └── docs/
-    └── architecture/
-        └── ARCHITECTURE_BOUNDARY.md
+    └── architecture.md
 ```
 
 ## Adapting the Template
@@ -118,4 +118,5 @@ rs-cli-tmpl/
 1. Replace the sample commands in `src/app/commands/<command>/` with your own business logic.
 2. Extend `src/app/api.rs` to compose dependencies and expose use-case APIs.
 3. Update the CLI definitions in `src/app/cli/` to match your command surface.
-4. Refresh the integration tests and documentation to describe the new behavior.
+4. Add new concept owners as siblings to `src/items/` when your project grows.
+5. Refresh the integration tests and documentation to describe the new behavior.

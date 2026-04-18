@@ -1,17 +1,18 @@
 use std::cell::RefCell;
 
-use crate::domain::{AppError, ItemId, ports::ItemStore};
+use crate::AppError;
+use crate::items::{ItemId, ItemStore};
 
 /// Mock implementation of `ItemStore` for unit testing.
 #[derive(Default)]
-pub struct MockItemStore {
-    pub add_calls: RefCell<Vec<(String, String)>>,
-    pub delete_calls: RefCell<Vec<String>>,
-    pub list_items_values: RefCell<Vec<String>>,
+pub(crate) struct MockItemStore {
+    pub(crate) add_calls: RefCell<Vec<(String, String)>>,
+    pub(crate) delete_calls: RefCell<Vec<String>>,
+    pub(crate) list_items_values: RefCell<Vec<String>>,
 }
 
 impl MockItemStore {
-    pub fn set_list_items<I>(&self, items: I)
+    pub(crate) fn set_list_items<I>(&self, items: I)
     where
         I: IntoIterator,
         I::Item: Into<String>,

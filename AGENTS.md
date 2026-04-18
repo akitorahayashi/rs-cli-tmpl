@@ -1,12 +1,17 @@
 # rs-cli-tmpl Development Overview
 
 ## Project Summary
-`rs-cli-tmpl` is a reference template for building Rust-based command line tools with a clean, layered architecture. It demonstrates how to separate concerns across domain invariants, ports, adapters, and application commands, providing a well-tested foundation for new projects. The template includes sample commands (`add`, `list`, and `delete`) that can be replaced or extended with custom domain logic.
+`rs-cli-tmpl` is a reference template for building Rust command line tools with
+concept-owned module boundaries. It demonstrates how to separate orchestration
+from concept ownership while keeping contracts and concrete implementations
+inside the concept module. The template includes sample commands (`add`,
+`list`, and `delete`) that can be replaced or extended with project-specific
+behavior.
 
 ## Tech Stack
-- **Language**: Rust
-- **CLI Parsing**: `clap`
-- **Development Dependencies**:
+- Language: Rust
+- CLI parsing: `clap`
+- Development dependencies:
   - `assert_cmd`
   - `assert_fs`
   - `predicates`
@@ -14,27 +19,35 @@
   - `tempfile`
 
 ## Coding Standards
-- **Formatter**: `rustfmt` is used for code formatting. Key rules include a maximum line width of 100 characters, crate-level import granularity, and grouping imports by standard, external, and crate modules.
-- **Linter**: `clippy` is used for linting, with a strict policy of treating all warnings as errors (`-D warnings`).
+- Formatter: `rustfmt` with a maximum line width of 100 characters,
+  crate-level import granularity, and grouped imports.
+- Linter: `clippy` with warnings treated as errors (`-D warnings`).
 
 ## Naming Conventions
-- **Structs and Enums**: `PascalCase` (e.g., `Cli`, `Commands`)
-- **Functions and Variables**: `snake_case` (e.g., `run_tests`, `test_context`)
-- **Modules**: `snake_case` (e.g., `cli_commands.rs`)
+- Structs and enums: `PascalCase`.
+- Functions and variables: `snake_case`.
+- Modules: `snake_case`.
 
 ## Verify Commands
-- **Format**: `cargo fmt --check`
-- **Lint**: `cargo clippy --all-targets --all-features -- -D warnings`
-- **Test**: `cargo test --all-targets --all-features`
+- Format: `cargo fmt --check`
+- Lint: `cargo clippy --all-targets --all-features -- -D warnings`
+- Test: `cargo test --all-targets --all-features`
 
 ## Testing Strategy
-- **Unit Tests**: Located within the `src/` directory alongside the code they test, covering domain invariants and adapter implementations.
-- **Command Logic Tests**: Found in `src/app/commands/`, utilizing `MockItemStore` from `src/testing/` (compiled with `#[cfg(test)]`) to ensure business logic is tested in isolation via the `Command` trait.
-- **Integration Tests**: Housed in the `tests/` directory, organised into two explicit boundaries: `tests/cli.rs` for CLI user flows and `tests/library.rs` for the public library API. Behavior-oriented modules live under `tests/cli/` and `tests/library/`; shared fixtures reside in `tests/harness/test_context.rs`.
-- **CI**: GitHub Actions automatically runs build, linting, and test workflows, as defined in `.github/workflows/`.
+- Unit tests: located in `src/` next to owned modules.
+- Command logic tests: in `src/app/commands/` using `MockItemStore` from
+  `src/items/testing.rs` under `#[cfg(test)]`.
+- Integration tests: in `tests/`, with `tests/cli.rs` for CLI boundary behavior
+  and `tests/library.rs` for public library boundary behavior. Shared fixtures
+  live in `tests/harness/test_context.rs`.
+- CI: GitHub Actions runs build, linting, and tests.
 
 ## Architectural Highlights
-- **Layered architecture**: `domain/` contains pure invariants and port contracts (`domain/ports/`), `adapters/` provides implementations, and `app/` wires commands with `AppContext`.
-- **I/O abstraction**: `src/domain/ports/item_store.rs` defines an `ItemStore` trait and `src/adapters/filesystem_item_store.rs` implements it, rooted at `~/.config/rs-cli-tmpl`.
-- **Configuration management**: `src/adapters/storage_settings.rs` provides storage path configuration, enabling custom paths for testing.
-- **Storage Layout**: Items are stored under `~/.config/rs-cli-tmpl/<id>/item.txt`.
+- Top-level owners: `app/` for orchestration, `items/` for the sample concept,
+  and `error.rs` for application-wide errors.
+- Contract and implementation co-location: `src/items/store.rs` defines
+  `ItemStore`; `src/items/storage/filesystem_store.rs` implements it.
+- Configuration ownership: `src/items/storage/settings.rs` provides storage path
+  configuration for item persistence.
+- Storage layout: items are stored under
+  `~/.config/rs-cli-tmpl/<id>/item.txt`.

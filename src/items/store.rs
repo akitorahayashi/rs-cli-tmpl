@@ -1,6 +1,7 @@
-use crate::domain::{AppError, ItemId};
+use super::item_id::ItemId;
+use crate::AppError;
 
-/// Port for item storage operations.
+/// Storage contract for item operations.
 pub trait ItemStore {
     /// Store an item with the given identifier and content.
     fn add_item(&self, id: &ItemId, content: &str) -> Result<(), AppError>;

@@ -1,5 +1,5 @@
+use crate::AppError;
 use crate::app::api;
-use crate::domain::AppError;
 
 pub(super) fn run() -> Result<(), AppError> {
     let items = api::list()?;

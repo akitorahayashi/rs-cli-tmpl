@@ -1,5 +1,6 @@
-use crate::domain::AppError;
 use std::path::PathBuf;
+
+use crate::AppError;
 
 /// Storage location settings.
 #[derive(Debug, Clone)]

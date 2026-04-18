@@ -1,6 +1,6 @@
 use std::path::{Component, Path};
 
-use super::AppError;
+use crate::AppError;
 
 /// A validated item identifier.
 ///
