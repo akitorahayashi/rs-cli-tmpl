@@ -1,5 +1,6 @@
+use crate::AppError;
 use crate::app::AppContext;
-use crate::domain::{AppError, ItemId, ports::ItemStore};
+use crate::items::{ItemId, ItemStore};
 
 /// Delete an item from storage.
 pub fn execute(ctx: &AppContext<impl ItemStore>, id: &str) -> Result<(), AppError> {
@@ -10,7 +11,7 @@ pub fn execute(ctx: &AppContext<impl ItemStore>, id: &str) -> Result<(), AppErro
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::testing::MockItemStore;
+    use crate::items::MockItemStore;
 
     #[test]
     fn delete_item_forwards_to_store() {

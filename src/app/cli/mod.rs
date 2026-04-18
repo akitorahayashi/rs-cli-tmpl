@@ -4,7 +4,7 @@ mod add;
 mod delete;
 mod list;
 
-use crate::domain::AppError;
+use crate::AppError;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]

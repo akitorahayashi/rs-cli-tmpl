@@ -1,5 +1,6 @@
+use crate::AppError;
 use crate::app::AppContext;
-use crate::domain::{AppError, ports::ItemStore};
+use crate::items::ItemStore;
 
 /// List all item identifiers from storage.
 pub fn execute(ctx: &AppContext<impl ItemStore>) -> Result<Vec<String>, AppError> {
@@ -9,7 +10,7 @@ pub fn execute(ctx: &AppContext<impl ItemStore>) -> Result<Vec<String>, AppError
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::testing::MockItemStore;
+    use crate::items::MockItemStore;
 
     #[test]
     fn list_items_returns_store_values() {

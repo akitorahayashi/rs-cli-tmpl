@@ -1,8 +1,8 @@
 //! Public application API facade.
 
-use crate::adapters::FilesystemItemStore;
+use crate::AppError;
 use crate::app::{AppContext, commands};
-use crate::domain::AppError;
+use crate::items::FilesystemItemStore;
 
 /// Create the default application context.
 fn default_context() -> Result<AppContext<FilesystemItemStore>, AppError> {
