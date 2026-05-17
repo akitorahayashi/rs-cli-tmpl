@@ -13,6 +13,7 @@ on:
 
 jobs:
   static-checks:
+    name: Static Checks
     uses: ./.github/workflows/run-static-checks.yml
 
   build:
